@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 - 런웨이</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/html/style.css">
+    <style>
+        body.page-login {
+            background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+            min-height: 100vh;
+        }
+
+        .login-shell {
+            min-height: calc(100vh - 72px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1.25rem 3rem;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 460px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+            padding: 2rem;
+        }
+
+        .login-eyebrow {
+            font-size: 0.76rem;
+            letter-spacing: 0.22em;
+            color: #6b7280;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-title {
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.65rem;
+        }
+
+        .login-desc {
+            color: #475569;
+            font-size: 0.95rem;
+            line-height: 1.65;
+            margin-bottom: 1.5rem;
+        }
+        .social-login {
+            margin: 1rem 0 1.1rem;
+        }
+        .social-login-buttons {
+            display: grid;
+            gap: 0.6rem;
+        }
+        .social-login-btn {
+            width: 100%;
+            height: 44px;
+            border-radius: 10px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+        .social-login-btn.kakao {
+            background: #fee500;
+            color: #181600;
+            border-color: #f1d900;
+        }
+        .social-login-btn.google {
+            background: #ffffff;
+            color: #111827;
+            border-color: #d1d5db;
+        }
+        .social-login-btn.naver {
+            background: #03c75a;
+            color: #ffffff;
+            border-color: #03b152;
+        }
+        .login-divider {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 1.2rem 0 1.2rem;
+            color: #6b7280;
+            font-size: 0.86rem;
+            font-weight: 600;
+        }
+        .login-divider::before,
+        .login-divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+        .login-form-group {
+            margin-bottom: 1rem;
+        }
+
+        .login-form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.88rem;
+            color: #1f2937;
+            margin-bottom: 0.45rem;
+        }
+
+        .login-input-wrap {
+            position: relative;
+        }
+
+        .login-input {
+            width: 100%;
+            height: 44px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            background: #fafafa;
+            padding: 0 0.9rem;
+            font-size: 0.92rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: #374151;
+            box-shadow: 0 0 0 4px rgba(17, 24, 39, 0.08);
+            background: #ffffff;
+        }
+
+        .password-input {
+            padding-right: 5rem;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 0.45rem;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: transparent;
+            color: #4b5563;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 0.35rem 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .password-toggle:hover {
+            background: #f3f4f6;
+        }
+
+        .auth-feedback {
+            display: none;
+            border-radius: 10px;
+            padding: 0.65rem 0.75rem;
+            font-size: 0.86rem;
+            line-height: 1.5;
+            margin: 0.9rem 0;
+        }
+
+        .auth-feedback.error {
+            display: block;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+        }
+
+        .auth-feedback.success {
+            display: block;
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            color: #065f46;
+        }
+
+        .login-submit {
+            width: 100%;
+            height: 44px;
+            border: none;
+            border-radius: 10px;
+            background: #111827;
+            color: #ffffff;
+            font-size: 0.93rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            margin-top: 0.35rem;
+        }
+
+        .login-submit:hover {
+            background: #1f2937;
+        }
+
+        .login-submit:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .login-links {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: space-between;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            font-size: 0.86rem;
+        }
+
+        .login-links a {
+            color: #4b5563;
+            text-decoration: none;
+        }
+
+        .login-links a:hover {
+            text-decoration: underline;
+            color: #111827;
+        }
+    </style>
+</head>
+<body class="page-login">
+    <nav id="nav">
+        <div class="nav-container">
+            <a href="/" class="logo">RUNWAY</a>
+            <div class="nav-right">
+                <ul class="nav-links">
+                    <li><a href="/">MAIN</a></li>
+                    <li><a href="/sns">SNS 마케팅</a></li>
+                    <li><a href="/db">DB 마케팅</a></li>
+                </ul>
+                <a href="/login" class="btn nav-login-btn">회원가입/로그인</a>
+                <a href="#none" class="btn btn-primary nav-cta">상담 준비 중</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="login-shell">
+        <section class="login-card" aria-label="런웨이 로그인">
+            <p class="login-eyebrow">RUNWAY PLATFORM</p>
+            <h1 class="login-title">로그인</h1>
+            <p class="login-desc">
+                고객과 관리자 모두 동일한 인증 시스템으로 로그인합니다.
+                로그인 후 권한에 따라 자동으로 화면이 분기됩니다.
+            </p>
+            <div class="social-login" aria-label="간편로그인">
+                <div class="social-login-buttons">
+                    <button id="kakaoLoginButton" type="button" class="social-login-btn kakao">카카오로 시작하기</button>
+                    <button id="googleLoginButton" type="button" class="social-login-btn google">구글로 시작하기</button>
+                    <button id="naverLoginButton" type="button" class="social-login-btn naver">네이버로 시작하기</button>
+                </div>
+            </div>
+            <div class="login-divider" role="presentation">또는 이메일로 로그인하기</div>
+
+            <form id="loginForm" novalidate>
+                <div class="login-form-group">
+                    <label for="email">이메일</label>
+                    <input id="email" class="login-input" type="email" autocomplete="email" placeholder="name@company.com" required>
+                </div>
+
+                <div class="login-form-group">
+                    <label for="password">비밀번호</label>
+                    <div class="login-input-wrap">
+                        <input id="password" class="login-input password-input" type="password" autocomplete="current-password" placeholder="비밀번호를 입력하세요" required>
+                        <button type="button" id="passwordToggle" class="password-toggle" aria-label="비밀번호 보기">보기</button>
+                    </div>
+                </div>
+
+                <div id="errorMessage" class="auth-feedback" role="alert" aria-live="polite"></div>
+                <div id="successMessage" class="auth-feedback" role="status" aria-live="polite"></div>
+
+                <button id="submitButton" class="login-submit" type="submit">로그인</button>
+            </form>
+
+            <div class="login-links">
+                <a href="/signup">회원가입</a>
+                <a href="/forgot-password">비밀번호 찾기</a>
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="js/login-page.js"></script>
+</body>
+</html>

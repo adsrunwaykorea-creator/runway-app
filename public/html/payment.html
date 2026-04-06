@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>결제 - 런웨이</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/html/style.css">
+</head>
+<body class="page-payment">
+    <nav id="nav">
+        <div class="nav-container">
+            <a href="/" class="logo">RUNWAY</a>
+            <div class="nav-right">
+                <ul class="nav-links">
+                    <li><a href="/">MAIN</a></li>
+                    <li><a href="/sns">SNS 마케팅</a></li>
+                    <li><a href="/db">DB 마케팅</a></li>
+                    <li><a href="/payment" aria-current="page">결제</a></li>
+                </ul>
+                <a href="/login" class="btn nav-login-btn">회원가입/로그인</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="payment-main">
+        <section class="payment-wrap container">
+            <div class="payment-header">
+                <p class="section-label">Payment</p>
+                <h1 id="paymentPageTitle">서비스를 선택하고 바로 결제하세요</h1>
+                <p class="payment-subtitle" id="paymentPageSubtitle">런웨이 톤에 맞춘 단순한 카드형 선택 방식으로 빠르게 진행할 수 있습니다.</p>
+            </div>
+
+            <div class="payment-panel">
+                <div class="payment-renew-banner" id="paymentRenewBanner" hidden>
+                    <p class="payment-renew-banner-title">연장 결제 · 추가 할인</p>
+                    <p class="payment-renew-banner-desc">지금 연장하면 10% 추가 할인 · 기본 이용 기간 3개월</p>
+                </div>
+                <div class="payment-block">
+                    <h2>1. 서비스 선택</h2>
+                    <div class="payment-grid" id="serviceOptions">
+                        <button type="button" class="payment-card is-selected" data-group="service" data-value="sns">
+                            <strong>SNS 마케팅</strong>
+                            <span data-role="service-price"></span>
+                        </button>
+                        <button type="button" class="payment-card" data-group="service" data-value="db">
+                            <strong>DB 마케팅</strong>
+                            <span data-role="service-price"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="payment-block">
+                    <h2>2. 이용 기간 선택</h2>
+                    <div class="payment-grid" id="periodOptions">
+                        <button type="button" class="payment-card" data-group="period" data-value="monthly">
+                            <strong>1개월</strong>
+                            <span class="payment-period-caption" data-role="monthly-caption">1개월 결제</span>
+                            <span class="payment-monthly-msg" data-role="monthly-urgent-msg" hidden></span>
+                            <span class="payment-monthly-badge" data-role="monthly-urgent-badge" hidden></span>
+                            <span class="payment-period-original" data-role="monthly-original-price"></span>
+                            <span class="payment-period-current" data-role="monthly-current-price"></span>
+                        </button>
+                        <button type="button" class="payment-card is-selected" data-group="period" data-value="quarterly">
+                            <strong>3개월</strong>
+                            <span class="payment-period-caption">3개월 일괄 결제</span>
+                            <span class="payment-quarterly-benefit" data-role="quarterly-extra-benefit" hidden></span>
+                            <span class="payment-quarterly-urgent-msg" data-role="quarterly-urgent-msg" hidden></span>
+                            <div class="payment-period-meta-row">
+                                <span class="payment-discount-rate" data-role="quarterly-discount-rate"></span>
+                                <span class="payment-timer" data-role="quarterly-discount-timer"></span>
+                            </div>
+                            <span class="payment-savings" data-role="quarterly-savings"></span>
+                            <span class="payment-savings-renew" data-role="quarterly-savings-renew"></span>
+                            <span class="payment-period-original" data-role="quarterly-original-price"></span>
+                            <span class="payment-period-current" data-role="quarterly-current-price"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="payment-result">
+                    <h2>3. 결제 금액</h2>
+                    <div class="payment-amount-card">
+                        <p class="payment-label">선택한 상품</p>
+                        <p class="payment-selection" id="selectionLabel">SNS 마케팅 · 3개월</p>
+                        <p class="payment-label">결제 금액</p>
+                        <p class="payment-amount" id="paymentAmount">-</p>
+                        <p class="payment-amount-original" id="paymentOriginalAmount"></p>
+                        <p class="payment-amount-discount-summary" id="paymentDiscountSummary" hidden></p>
+                        <p class="payment-summary-alert" id="paymentNote" hidden></p>
+                    </div>
+                </div>
+
+                <div class="payment-cta-trust" id="paymentCtaTrust">
+                    <p class="payment-cta-trust-line" id="paymentCtaTrustDiscount"></p>
+                    <p class="payment-cta-trust-line" id="paymentCtaTrustPeriod"></p>
+                </div>
+
+                <button type="button" class="btn btn-primary payment-submit" id="paymentButton">4. 결제하기</button>
+                <div class="payment-feedback" id="paymentFeedback" aria-live="polite"></div>
+            </div>
+        </section>
+    </main>
+
+    <script type="module">
+        import { getSupabaseClient } from "/html/js/supabase-client.js";
+        import { loadPricingConfig, getPlanMeta } from "/html/js/pricing-runtime.js";
+
+        (async function () {
+            var pricingConfig = await loadPricingConfig();
+            var urlParams = new URLSearchParams(window.location.search);
+            var isRenew = urlParams.get("renew") === "true";
+            var isUrgentRenew = isRenew && urlParams.get("urgent") === "true";
+            var urlService = urlParams.get("service");
+            var urlPeriod = urlParams.get("period");
+            var renewalPct = Number(pricingConfig.renewalExtraDiscountPercent);
+            if (!Number.isFinite(renewalPct) || renewalPct < 0) {
+                renewalPct = 10;
+            }
+            var monthlyUrgentPct = Number(pricingConfig.renewalMonthlyUrgentDiscountPercent);
+            if (!Number.isFinite(monthlyUrgentPct) || monthlyUrgentPct < 0) {
+                monthlyUrgentPct = 15;
+            }
+
+            var labels = {
+                service: {
+                    sns: "SNS 마케팅",
+                    db: "DB 마케팅"
+                },
+                period: {
+                    monthly: pricingConfig.monthly.label,
+                    quarterly: pricingConfig.quarterly.label
+                }
+            };
+
+            var months = {
+                monthly: 1,
+                quarterly: 3
+            };
+
+            var selected = {
+                service: "sns",
+                period: "quarterly"
+            };
+
+            var pricePolicies = [
+                function basePricePolicy(context) {
+                    return context.basePrice;
+                }
+            ];
+
+            var amountEl = document.getElementById("paymentAmount");
+            var selectionEl = document.getElementById("selectionLabel");
+            var noteEl = document.getElementById("paymentNote");
+            var paymentButton = document.getElementById("paymentButton");
+            var paymentFeedback = document.getElementById("paymentFeedback");
+            var paymentOriginalAmountEl = document.getElementById("paymentOriginalAmount");
+            var paymentDiscountSummaryEl = document.getElementById("paymentDiscountSummary");
+            var paymentCtaTrustPeriodEl = document.getElementById("paymentCtaTrustPeriod");
+            var paymentCtaTrustDiscountEl = document.getElementById("paymentCtaTrustDiscount");
+            var cards = document.querySelectorAll(".payment-card");
+            var serviceCards = document.querySelectorAll('.payment-card[data-group="service"]');
+            var monthlyCurrentPriceEl = document.querySelector('[data-role="monthly-current-price"]');
+            var quarterlyOriginalPriceEl = document.querySelector('[data-role="quarterly-original-price"]');
+            var quarterlyCurrentPriceEl = document.querySelector('[data-role="quarterly-current-price"]');
+            var quarterlyDiscountRateEl = document.querySelector('[data-role="quarterly-discount-rate"]');
+            var quarterlySavingsEl = document.querySelector('[data-role="quarterly-savings"]');
+            var quarterlySavingsRenewEl = document.querySelector('[data-role="quarterly-savings-renew"]');
+            var quarterlyTimerEl = document.querySelector('[data-role="quarterly-discount-timer"]');
+            var monthlyCaptionEl = document.querySelector('[data-role="monthly-caption"]');
+            var monthlyOriginalPriceEl = document.querySelector('[data-role="monthly-original-price"]');
+            var monthlyUrgentMsgEl = document.querySelector('[data-role="monthly-urgent-msg"]');
+            var monthlyUrgentBadgeEl = document.querySelector('[data-role="monthly-urgent-badge"]');
+            var quarterlyExtraBenefitEl = document.querySelector('[data-role="quarterly-extra-benefit"]');
+            var quarterlyUrgentMsgEl = document.querySelector('[data-role="quarterly-urgent-msg"]');
+            var paymentRenewBanner = document.getElementById("paymentRenewBanner");
+            var paymentPageTitle = document.getElementById("paymentPageTitle");
+            var paymentPageSubtitle = document.getElementById("paymentPageSubtitle");
+            var timerIntervalId = null;
+
+            /** 연장 시: 1개월은 기본 정가·긴급 시만 15% 등. 3개월은 연장 추가 % 적용. */
+            function applyRenewalPrice(campaignPrice, period) {
+                if (!isRenew) return campaignPrice;
+                if (period === "monthly") {
+                    if (isUrgentRenew) {
+                        return Math.round(campaignPrice * (1 - monthlyUrgentPct / 100));
+                    }
+                    return campaignPrice;
+                }
+                if (period === "quarterly") {
+                    if (renewalPct <= 0) return campaignPrice;
+                    return Math.round(campaignPrice * (1 - renewalPct / 100));
+                }
+                return campaignPrice;
+            }
+
+            function applyRenewChrome() {
+                if (paymentRenewBanner) {
+                    paymentRenewBanner.hidden = !isRenew;
+                    paymentRenewBanner.classList.toggle("payment-renew-banner--emphasis", isRenew);
+                    var desc = paymentRenewBanner.querySelector(".payment-renew-banner-desc");
+                    if (desc) {
+                        var periodHint;
+                        if (selected.period === "monthly") {
+                            periodHint = "선택한 기간 1개월";
+                        } else if (urlPeriod === "quarterly") {
+                            periodHint = "선택한 기간 3개월";
+                        } else {
+                            periodHint = "기본 이용 기간 3개월";
+                        }
+                        if (isUrgentRenew) {
+                            desc.innerHTML =
+                                "<span class=\"payment-renew-banner-highlight\">만료 임박</span> · " +
+                                monthlyUrgentPct +
+                                "%(1개월) / " +
+                                renewalPct +
+                                "%(3개월) 연장 혜택 · " +
+                                periodHint;
+                        } else {
+                            desc.innerHTML =
+                                "<span class=\"payment-renew-banner-highlight\">3개월 연장 시 " +
+                                renewalPct +
+                                "% 추가 할인</span> · " +
+                                periodHint;
+                        }
+                    }
+                }
+                if (isRenew && paymentPageTitle && paymentPageSubtitle) {
+                    paymentPageTitle.textContent = "서비스 연장 결제";
+                    if (isUrgentRenew) {
+                        paymentPageSubtitle.textContent =
+                            "1개월은 이탈 방지용 정가·긴급 할인, 3개월은 혜택 유지(4개월 이용)를 권장합니다. " +
+                            (selected.period === "quarterly" && !urlPeriod
+                                ? "기본 선택은 3개월입니다."
+                                : "선택한 서비스와 기간이 반영되었습니다.");
+                    } else {
+                        paymentPageSubtitle.textContent =
+                            "3개월 연장 시 4개월 이용(1개월 추가 제공)과 연장 추가 " +
+                            renewalPct +
+                            "% 할인이 적용됩니다. " +
+                            (selected.period === "quarterly" && !urlPeriod
+                                ? "기본 선택은 3개월입니다."
+                                : "선택한 서비스와 기간이 반영되었습니다.");
+                    }
+                }
+            }
+
+            function updatePeriodCardStyles() {
+                var monthlyCard = document.querySelector(
+                    '.payment-card[data-group="period"][data-value="monthly"]'
+                );
+                var quarterlyCard = document.querySelector(
+                    '.payment-card[data-group="period"][data-value="quarterly"]'
+                );
+                if (monthlyCard) monthlyCard.classList.toggle("payment-card--period-monthly", isRenew);
+                if (quarterlyCard) quarterlyCard.classList.toggle("payment-card--period-quarterly", isRenew);
+            }
+
+            if (isRenew) {
+                if (urlPeriod === "monthly" || urlPeriod === "quarterly") {
+                    selected.period = urlPeriod;
+                } else {
+                    selected.period = "quarterly";
+                }
+                if (urlService) {
+                    var dec = urlService;
+                    try {
+                        dec = decodeURIComponent(urlService);
+                    } catch (e) {
+                        dec = urlService;
+                    }
+                    if (/DB/i.test(dec) || dec.indexOf("DB") !== -1) {
+                        selected.service = "db";
+                    } else {
+                        selected.service = "sns";
+                    }
+                }
+                cards.forEach(function (card) {
+                    var g = card.dataset.group;
+                    if (g === "service" || g === "period") {
+                        card.classList.toggle("is-selected", card.dataset.value === selected[g]);
+                    }
+                });
+            }
+            updatePeriodCardStyles();
+
+            function formatPrice(value) {
+                return "₩" + value.toLocaleString("ko-KR");
+            }
+
+            function formatSavingWon(saving) {
+                if (typeof saving !== "number" || !Number.isFinite(saving)) return "";
+                return saving.toLocaleString("ko-KR") + "원 절약";
+            }
+
+            function runPricePolicies(context) {
+                return pricePolicies.reduce(function (currentPrice, policy) {
+                    var nextPrice = policy(context, currentPrice);
+                    if (typeof nextPrice !== "number" || Number.isNaN(nextPrice)) {
+                        return currentPrice;
+                    }
+                    return nextPrice;
+                }, context.basePrice);
+            }
+
+            function getPlanPriceMeta(serviceKey, period) {
+                return getPlanMeta(pricingConfig, serviceKey, period, labels.period);
+            }
+
+            function setOptionalText(element, value) {
+                if (!element) return;
+                var hasValue = Boolean(value);
+                element.textContent = hasValue ? value : "";
+                element.style.display = hasValue ? "" : "none";
+            }
+
+            function updateServiceCardPriceLabels() {
+                serviceCards.forEach(function (card) {
+                    var key = card.dataset.value;
+                    var subtitleEl = card.querySelector('[data-role="service-price"]');
+                    if (!subtitleEl) return;
+                    var meta = getPlanPriceMeta(key, "monthly");
+                    if (meta && typeof meta.price === "number") {
+                        subtitleEl.textContent = "월 관리비 기준 " + meta.price.toLocaleString("ko-KR") + "원";
+                    } else {
+                        subtitleEl.textContent = "";
+                    }
+                });
+            }
+
+            function setUrgentLine(el, text) {
+                if (!el) return;
+                if (text) {
+                    el.textContent = text;
+                    el.hidden = false;
+                } else {
+                    el.textContent = "";
+                    el.hidden = true;
+                }
+            }
+
+            function updatePeriodCardPriceLabels(serviceKey) {
+                var monthlyMeta = getPlanPriceMeta(serviceKey, "monthly");
+                var quarterlyMeta = getPlanPriceMeta(serviceKey, "quarterly");
+
+                if (monthlyCurrentPriceEl) {
+                    if (monthlyMeta && typeof monthlyMeta.price === "number") {
+                        var mFinal = applyRenewalPrice(monthlyMeta.price, "monthly");
+                        monthlyCurrentPriceEl.textContent = formatPrice(mFinal);
+                        if (isRenew && isUrgentRenew) {
+                            setOptionalText(monthlyOriginalPriceEl, formatPrice(monthlyMeta.price));
+                            setUrgentLine(monthlyUrgentMsgEl, "곧 서비스 종료");
+                            setUrgentLine(monthlyUrgentBadgeEl, monthlyUrgentPct + "% 할인");
+                            if (monthlyCaptionEl) monthlyCaptionEl.textContent = "1개월 결제";
+                        } else if (isRenew) {
+                            setOptionalText(monthlyOriginalPriceEl, "");
+                            setUrgentLine(monthlyUrgentMsgEl, "");
+                            setUrgentLine(monthlyUrgentBadgeEl, "");
+                            if (monthlyCaptionEl) monthlyCaptionEl.textContent = "정상가";
+                        } else {
+                            setOptionalText(monthlyOriginalPriceEl, "");
+                            setUrgentLine(monthlyUrgentMsgEl, "");
+                            setUrgentLine(monthlyUrgentBadgeEl, "");
+                            if (monthlyCaptionEl) monthlyCaptionEl.textContent = "1개월 결제";
+                        }
+                    } else {
+                        monthlyCurrentPriceEl.textContent = "가격 확인 필요";
+                    }
+                }
+
+                if (quarterlyCurrentPriceEl) {
+                    if (quarterlyMeta && typeof quarterlyMeta.price === "number") {
+                        var qFinal = applyRenewalPrice(quarterlyMeta.price, "quarterly");
+                        quarterlyCurrentPriceEl.textContent = formatPrice(qFinal);
+                    } else {
+                        quarterlyCurrentPriceEl.textContent = "가격 확인 필요";
+                    }
+                }
+
+                setOptionalText(
+                    quarterlyOriginalPriceEl,
+                    quarterlyMeta && quarterlyMeta.originalPrice != null
+                        ? formatPrice(quarterlyMeta.originalPrice)
+                        : ""
+                );
+
+                if (isRenew && !isUrgentRenew) {
+                    setOptionalText(quarterlyDiscountRateEl, "");
+                    if (quarterlyTimerEl) {
+                        quarterlyTimerEl.textContent = "";
+                        quarterlyTimerEl.style.display = "none";
+                    }
+                    if (quarterlyExtraBenefitEl) {
+                        quarterlyExtraBenefitEl.textContent = "4개월 이용 (1개월 추가 제공)";
+                        quarterlyExtraBenefitEl.hidden = false;
+                    }
+                    if (quarterlyUrgentMsgEl) {
+                        quarterlyUrgentMsgEl.textContent = "";
+                        quarterlyUrgentMsgEl.hidden = true;
+                    }
+                } else if (isRenew && isUrgentRenew) {
+                    setOptionalText(
+                        quarterlyDiscountRateEl,
+                        quarterlyMeta && typeof quarterlyMeta.discountRate === "number"
+                            ? "🔥 오늘만 " + quarterlyMeta.discountRate + "% 할인"
+                            : ""
+                    );
+                    if (quarterlyTimerEl) quarterlyTimerEl.style.display = "";
+                    if (quarterlyExtraBenefitEl) quarterlyExtraBenefitEl.hidden = true;
+                    if (quarterlyUrgentMsgEl) {
+                        quarterlyUrgentMsgEl.textContent = "지금 연장 시 혜택 유지";
+                        quarterlyUrgentMsgEl.hidden = false;
+                    }
+                } else {
+                    setOptionalText(
+                        quarterlyDiscountRateEl,
+                        quarterlyMeta && typeof quarterlyMeta.discountRate === "number"
+                            ? "🔥 오늘만 " + quarterlyMeta.discountRate + "% 할인"
+                            : ""
+                    );
+                    if (quarterlyTimerEl) quarterlyTimerEl.style.display = "";
+                    if (quarterlyExtraBenefitEl) quarterlyExtraBenefitEl.hidden = true;
+                    if (quarterlyUrgentMsgEl) {
+                        quarterlyUrgentMsgEl.textContent = "";
+                        quarterlyUrgentMsgEl.hidden = true;
+                    }
+                }
+
+                var sav = quarterlyMeta && quarterlyMeta.saving != null ? quarterlyMeta.saving : null;
+                setOptionalText(quarterlySavingsEl, sav != null && sav > 0 ? formatSavingWon(sav) : "");
+                var renewExtra =
+                    isRenew && renewalPct > 0 && quarterlyMeta && typeof quarterlyMeta.price === "number"
+                        ? quarterlyMeta.price - applyRenewalPrice(quarterlyMeta.price, "quarterly")
+                        : null;
+                setOptionalText(
+                    quarterlySavingsRenewEl,
+                    renewExtra != null && renewExtra > 0
+                        ? "연장 추가 " + renewalPct + "% · " + formatSavingWon(renewExtra)
+                        : ""
+                );
+            }
+
+            function formatCountdown(diffMs) {
+                var safeMs = diffMs > 0 ? diffMs : 0;
+                var totalSeconds = Math.floor(safeMs / 1000);
+                var hours = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
+                var minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
+                var seconds = String(totalSeconds % 60).padStart(2, "0");
+                return hours + ":" + minutes + ":" + seconds;
+            }
+
+            function updateDiscountTimer() {
+                if (!quarterlyTimerEl) return;
+                var now = new Date();
+                var end = new Date(now);
+                end.setHours(24, 0, 0, 0);
+                var diffMs = end.getTime() - now.getTime();
+                quarterlyTimerEl.textContent = "⏰ 마감까지 " + formatCountdown(diffMs);
+            }
+
+            function startDiscountTimer() {
+                updateDiscountTimer();
+                if (timerIntervalId) {
+                    clearInterval(timerIntervalId);
+                }
+                timerIntervalId = window.setInterval(updateDiscountTimer, 1000);
+            }
+
+            function calculateAmount(serviceKey, period) {
+                var planMeta = getPlanPriceMeta(serviceKey, period);
+                if (!planMeta || typeof planMeta.price !== "number") return null;
+
+                var base = applyRenewalPrice(planMeta.price, period);
+
+                return runPricePolicies({
+                    serviceKey: serviceKey,
+                    period: period,
+                    months: months[period],
+                    basePrice: base
+                });
+            }
+
+            function renderAmount() {
+                var periodMonth = months[selected.period];
+                var total = calculateAmount(selected.service, selected.period);
+                var planMeta = getPlanPriceMeta(selected.service, selected.period);
+
+                amountEl.textContent = typeof total === "number" ? formatPrice(total) : "-";
+                selectionEl.textContent = labels.service[selected.service] + " · " + labels.period[selected.period];
+
+                if (paymentOriginalAmountEl) {
+                    if (
+                        isRenew &&
+                        isUrgentRenew &&
+                        selected.period === "monthly" &&
+                        planMeta &&
+                        typeof planMeta.price === "number"
+                    ) {
+                        paymentOriginalAmountEl.textContent = formatPrice(planMeta.price);
+                    } else {
+                        paymentOriginalAmountEl.textContent =
+                            planMeta && planMeta.originalPrice != null && planMeta.originalPrice > planMeta.price
+                                ? formatPrice(planMeta.originalPrice)
+                                : "";
+                    }
+                }
+
+                if (paymentDiscountSummaryEl) {
+                    var parts = [];
+                    if (
+                        !isRenew &&
+                        selected.period === "quarterly" &&
+                        planMeta &&
+                        typeof planMeta.discountRate === "number" &&
+                        planMeta.saving != null &&
+                        planMeta.saving > 0
+                    ) {
+                        parts.push(
+                            "🔥 오늘만 " +
+                                planMeta.discountRate +
+                                "% 할인 · " +
+                                formatSavingWon(planMeta.saving)
+                        );
+                    }
+                    if (
+                        isRenew &&
+                        isUrgentRenew &&
+                        selected.period === "monthly" &&
+                        planMeta &&
+                        typeof planMeta.price === "number"
+                    ) {
+                        var mSave = planMeta.price - applyRenewalPrice(planMeta.price, "monthly");
+                        if (mSave > 0) {
+                            parts.push(
+                                "곧 서비스 종료 · " + monthlyUrgentPct + "% · " + formatSavingWon(mSave)
+                            );
+                        }
+                    }
+                    if (
+                        isRenew &&
+                        renewalPct > 0 &&
+                        selected.period === "quarterly" &&
+                        planMeta &&
+                        typeof planMeta.price === "number"
+                    ) {
+                        var renewSave = planMeta.price - applyRenewalPrice(planMeta.price, "quarterly");
+                        if (renewSave > 0) {
+                            parts.push(
+                                "연장 추가 " + renewalPct + "% · " + formatSavingWon(renewSave)
+                            );
+                        }
+                    }
+                    if (parts.length > 0) {
+                        paymentDiscountSummaryEl.textContent = parts.join("  |  ");
+                        paymentDiscountSummaryEl.hidden = false;
+                    } else {
+                        paymentDiscountSummaryEl.textContent = "";
+                        paymentDiscountSummaryEl.hidden = true;
+                    }
+                }
+
+                if (paymentCtaTrustPeriodEl) {
+                    if (isRenew && selected.period === "quarterly" && !isUrgentRenew) {
+                        paymentCtaTrustPeriodEl.textContent = "✔ 4개월 이용 (1개월 추가 제공)";
+                    } else if (isRenew && selected.period === "quarterly" && isUrgentRenew) {
+                        paymentCtaTrustPeriodEl.textContent =
+                            "✔ 지금 연장 시 혜택 유지 · 3개월 일괄 결제";
+                    } else {
+                        paymentCtaTrustPeriodEl.textContent =
+                            "✔ 추가 비용 없이 " + periodMonth + "개월 이용";
+                    }
+                }
+                if (paymentCtaTrustDiscountEl) {
+                    if (isRenew && selected.period === "quarterly" && renewalPct > 0) {
+                        paymentCtaTrustDiscountEl.textContent =
+                            "✔ 연장 추가 " + renewalPct + "% 할인 적용";
+                    } else if (isRenew && selected.period === "monthly" && isUrgentRenew) {
+                        paymentCtaTrustDiscountEl.textContent =
+                            "✔ 곧 서비스 종료 · " + monthlyUrgentPct + "% 할인 적용";
+                    } else if (isRenew && selected.period === "monthly") {
+                        paymentCtaTrustDiscountEl.textContent = "✔ 정상가 (이탈 방지용)";
+                    } else if (
+                        selected.period === "quarterly" &&
+                        planMeta &&
+                        typeof planMeta.discountRate === "number"
+                    ) {
+                        paymentCtaTrustDiscountEl.textContent = "✔ 지금 결제하면 오늘 할인 적용";
+                    } else {
+                        paymentCtaTrustDiscountEl.textContent = "✔ 선택한 금액으로 바로 결제";
+                    }
+                }
+
+                if (noteEl) {
+                    noteEl.textContent = "";
+                    noteEl.hidden = true;
+                }
+            }
+
+            function applySelection(group, value) {
+                selected[group] = value;
+
+                cards.forEach(function (card) {
+                    if (card.dataset.group === group) {
+                        card.classList.toggle("is-selected", card.dataset.value === value);
+                    }
+                });
+
+                renderAmount();
+                if (group === "service") {
+                    updatePeriodCardPriceLabels(value);
+                }
+            }
+
+            function setFeedback(type, message) {
+                if (!paymentFeedback) return;
+                paymentFeedback.className = "payment-feedback";
+                paymentFeedback.textContent = "";
+                if (!message) return;
+                paymentFeedback.classList.add(type);
+                paymentFeedback.textContent = message;
+            }
+
+            function setPaymentLoading(isLoading) {
+                paymentButton.disabled = isLoading;
+                paymentButton.textContent = isLoading ? "결제창 여는 중..." : "4. 결제하기";
+            }
+
+            cards.forEach(function (card) {
+                card.addEventListener("click", function () {
+                    applySelection(card.dataset.group, card.dataset.value);
+                });
+            });
+
+            paymentButton.addEventListener("click", async function () {
+                try {
+                    setFeedback("", "");
+                    setPaymentLoading(true);
+                    var supabase = getSupabaseClient();
+                    var userResult = await supabase.auth.getUser();
+                    var user = userResult && userResult.data ? userResult.data.user : null;
+                    console.log("[PAYMENT_USER]", user ? { id: user.id, email: user.email } : null);
+
+                    if (!user) {
+                        setPaymentLoading(false);
+                        alert("로그인 후 이용해주세요");
+                        if (window.top && window.top !== window) {
+                            window.top.location.href = "/login";
+                        } else {
+                            window.location.href = "/login";
+                        }
+                        return;
+                    }
+
+                    var total = calculateAmount(selected.service, selected.period);
+                    var paymentData = {
+                        user_id: user.id,
+                        email: user.email || null,
+                        service: labels.service[selected.service] || selected.service,
+                        service_key: selected.service,
+                        period: selected.period,
+                        price: typeof total === "number" ? total : 0
+                    };
+                    console.log("[PAYMENT_DATA]", paymentData);
+
+                    if (!paymentData.price) {
+                        setPaymentLoading(false);
+                        setFeedback("error", "결제 금액을 확인할 수 없습니다.");
+                        return;
+                    }
+
+                    setFeedback("loading", "결제창으로 이동합니다...");
+                    var checkoutUrl =
+                        "/payment/checkout" +
+                        "?service=" + encodeURIComponent(paymentData.service) +
+                        "&service_key=" + encodeURIComponent(paymentData.service_key) +
+                        "&period=" + encodeURIComponent(paymentData.period) +
+                        "&price=" + encodeURIComponent(String(paymentData.price));
+
+                    if (window.top && window.top !== window) {
+                        window.top.location.href = checkoutUrl;
+                    } else {
+                        window.location.href = checkoutUrl;
+                    }
+                } catch (error) {
+                    setPaymentLoading(false);
+                    setFeedback("error", "결제 준비 중 오류가 발생했습니다.");
+                    console.log(error);
+                }
+            });
+
+            function configureRenewalTimer() {
+                if (!quarterlyTimerEl) return;
+                if (timerIntervalId) {
+                    clearInterval(timerIntervalId);
+                    timerIntervalId = null;
+                }
+                if (isRenew && !isUrgentRenew) {
+                    quarterlyTimerEl.textContent = "";
+                    quarterlyTimerEl.style.display = "none";
+                    return;
+                }
+                quarterlyTimerEl.style.display = "";
+                startDiscountTimer();
+            }
+
+            applyRenewChrome();
+            updateServiceCardPriceLabels();
+            updatePeriodCardPriceLabels(selected.service);
+            renderAmount();
+            configureRenewalTimer();
+        })();
+    </script>
+</body>
+</html>

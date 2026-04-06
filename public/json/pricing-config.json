@@ -1,0 +1,26 @@
+{
+  "renewalExtraDiscountPercent": 10,
+  "renewalMonthlyUrgentDiscountPercent": 15,
+  "monthly": {
+    "label": "1개월",
+    "period": "monthly",
+    "price": 499000
+  },
+  "quarterly": {
+    "label": "3개월",
+    "period": "quarterly",
+    "originalPrice": 1497000,
+    "price": 1290000
+  },
+  "byService": {
+    "db": {
+      "monthly": {
+        "price": 990000
+      },
+      "quarterly": {
+        "originalPrice": 2970000,
+        "price": 2490000
+      }
+    }
+  }
+}
