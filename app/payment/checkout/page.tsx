@@ -1,7 +1,5 @@
-import { requireProfileComplete } from '@/lib/requireProfile';
 import PaymentCheckoutClient from './PaymentCheckoutClient';
 
-export default async function PaymentCheckoutPage() {
-  await requireProfileComplete('/payment');
+export default function PaymentCheckoutPage() {
   return <PaymentCheckoutClient />;
 }

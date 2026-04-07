@@ -10,4 +10,7 @@ export function getSupabaseBrowserClient() {
   return browserClient;
 }
 
+/** Alias for `getSupabaseBrowserClient` (same singleton). */
+export const createClient = getSupabaseBrowserClient;
+
 export const supabase = getSupabaseBrowserClient();
