@@ -49,12 +49,15 @@ function loadTossScript() {
   });
 }
 
+const LOGIN_NEXT_PATH = '/payment/checkout';
+
 export default function PaymentCheckoutClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [message, setMessage] = useState('결제 정보를 확인하고 있습니다...');
+  const [message, setMessage] = useState('결제하기 버튼을 눌러 결제를 진행해주세요.');
   const [loading, setLoading] = useState(false);
   const [checkoutReady, setCheckoutReady] = useState(false);
+  const [paramsError, setParamsError] = useState<string | null>(null);
   const [paymentContext, setPaymentContext] = useState<{
     service: string;
     serviceKey: string;
@@ -65,36 +68,50 @@ export default function PaymentCheckoutClient() {
   } | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     const initializeCheckout = async () => {
       const service = searchParams.get('service') ?? '';
       const serviceKey = searchParams.get('service_key') ?? '';
       const period = searchParams.get('period') ?? '';
       const price = Number(searchParams.get('price') ?? '0');
       if (!service || !serviceKey || !period || !price) {
-        setMessage('결제 정보가 올바르지 않습니다. 다시 시도해주세요.');
+        if (!cancelled) {
+          setParamsError('결제 정보가 올바르지 않습니다. 다시 시도해주세요.');
+        }
         return;
       }
 
       const supabase = getSupabaseBrowserClient();
-      const { data, error } = await supabase.auth.getUser();
-      if (error || !data?.user) {
-        router.replace('/login');
+      const { data, error } = await supabase.auth.getSession();
+
+      if (cancelled) return;
+
+      if (error || !data.session) {
+        const qs = searchParams.toString();
+        const nextUrl = qs ? `${LOGIN_NEXT_PATH}?${qs}` : LOGIN_NEXT_PATH;
+        router.replace(`/login?next=${encodeURIComponent(nextUrl)}`);
         return;
       }
 
+      const user = data.session.user;
       setPaymentContext({
         service,
         serviceKey,
         period,
         price,
-        userId: data.user.id,
-        email: data.user.email ?? null,
+        userId: user.id,
+        email: user.email ?? null,
       });
       setCheckoutReady(true);
       setMessage('결제하기 버튼을 눌러 결제를 진행해주세요.');
     };
 
     void initializeCheckout();
+
+    return () => {
+      cancelled = true;
+    };
   }, [router, searchParams]);
 
   const handleStartPayment = async () => {
@@ -139,6 +156,25 @@ export default function PaymentCheckoutClient() {
       setLoading(false);
     }
   };
+
+  if (paramsError) {
+    return (
+      <main className="min-h-screen bg-gradient-to-b from-zinc-50 to-slate-100 p-6">
+        <section className="mx-auto w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+          <h1 className="mb-2 text-xl font-bold text-slate-900">결제 진행</h1>
+          <p className="text-sm text-zinc-600">{paramsError}</p>
+        </section>
+      </main>
+    );
+  }
+
+  if (!checkoutReady) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-zinc-50 to-slate-100">
+        <p className="text-zinc-600">로그인 상태 확인 중...</p>
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-zinc-50 to-slate-100 p-6">
