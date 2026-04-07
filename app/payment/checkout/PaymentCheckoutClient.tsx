@@ -87,10 +87,40 @@ export default function PaymentCheckoutClient() {
 
       if (cancelled) return;
 
-      if (error || !data.session) {
+      if (error) {
+        console.error('auth check error', error);
+      }
+
+      if (!data.session) {
         const qs = searchParams.toString();
         const nextUrl = qs ? `${LOGIN_NEXT_PATH}?${qs}` : LOGIN_NEXT_PATH;
         router.replace(`/login?next=${encodeURIComponent(nextUrl)}`);
+        return;
+      }
+
+      const userId = data.session.user.id;
+      const { data: profileRow, error: profileError } = await supabase
+        .from('profiles')
+        .select('name, phone')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (cancelled) return;
+
+      if (profileError) {
+        console.error('profile check error', profileError);
+        const qs = searchParams.toString();
+        const mypageNext = qs ? `${LOGIN_NEXT_PATH}?${qs}` : LOGIN_NEXT_PATH;
+        router.replace(`/mypage?next=${encodeURIComponent(mypageNext)}`);
+        return;
+      }
+
+      const name = profileRow?.name?.trim() ?? '';
+      const phone = profileRow?.phone?.trim() ?? '';
+      if (!name || !phone) {
+        const qs = searchParams.toString();
+        const mypageNext = qs ? `${LOGIN_NEXT_PATH}?${qs}` : LOGIN_NEXT_PATH;
+        router.replace(`/mypage?next=${encodeURIComponent(mypageNext)}`);
         return;
       }
 

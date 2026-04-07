@@ -23,8 +23,6 @@ export default function PaymentPageClient() {
 
       if (error) {
         console.error('auth check error', error);
-        router.replace(`/login?next=${encodeURIComponent(NEXT_PAYMENT)}`);
-        return;
       }
 
       if (!data.session) {

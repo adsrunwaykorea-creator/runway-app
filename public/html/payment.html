@@ -105,7 +105,6 @@
     </main>
 
     <script type="module">
-        import { getSupabaseClient } from "/html/js/supabase-client.js";
         import { loadPricingConfig, getPlanMeta } from "/html/js/pricing-runtime.js";
 
         (async function () {
@@ -637,26 +636,12 @@
                 try {
                     setFeedback("", "");
                     setPaymentLoading(true);
-                    var supabase = getSupabaseClient();
-                    var userResult = await supabase.auth.getUser();
-                    var user = userResult && userResult.data ? userResult.data.user : null;
-                    console.log("[PAYMENT_USER]", user ? { id: user.id, email: user.email } : null);
-
-                    if (!user) {
-                        setPaymentLoading(false);
-                        alert("로그인 후 이용해주세요");
-                        if (window.top && window.top !== window) {
-                            window.top.location.href = "/login";
-                        } else {
-                            window.location.href = "/login";
-                        }
-                        return;
-                    }
-
+                    /* 로그인·프로필은 /payment(PaymentPageClient)에서만 검사합니다.
+                       이 페이지는 iframe 안에서 돌며 @supabase/supabase-js 단독 클라이언트를 쓰기 때문에
+                       Next(@supabase/ssr) 쿠키 세션과 저장소가 달라 getUser()가 항상 비로그인처럼 보일 수 있습니다.
+                       결제 진입 시 세션·프로필은 /payment/checkout 에서 다시 확인합니다. */
                     var total = calculateAmount(selected.service, selected.period);
                     var paymentData = {
-                        user_id: user.id,
-                        email: user.email || null,
                         service: labels.service[selected.service] || selected.service,
                         service_key: selected.service,
                         period: selected.period,
