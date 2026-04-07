@@ -1,24 +1,24 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 
 const POST_LOGIN_NEXT_KEY = 'post_login_next';
 
+function getSafeNextFromSearch(search: string): string {
+  const params = new URLSearchParams(search);
+  const next = params.get('next');
+  if (!next) return '/payment';
+  if (!next.startsWith('/')) return '/payment';
+  if (next.startsWith('//')) return '/payment';
+  return next;
+}
+
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string>('');
-
-  const safeNext = useMemo(() => {
-    const next = searchParams.get('next');
-    if (!next) return '/payment';
-    if (!next.startsWith('/')) return '/payment';
-    if (next.startsWith('//')) return '/payment';
-    return next;
-  }, [searchParams]);
 
   useEffect(() => {
     let cancelled = false;
@@ -48,6 +48,7 @@ export default function LoginPage() {
         });
 
         if (!error && !cancelled) {
+          const safeNext = getSafeNextFromSearch(window.location.search);
           // Remove token fragment from URL after restoring session.
           window.history.replaceState({}, '', '/login');
           router.replace(safeNext ?? '/mypage');
@@ -61,21 +62,23 @@ export default function LoginPage() {
     return () => {
       cancelled = true;
     };
-  }, [router, safeNext]);
+  }, [router]);
 
   useEffect(() => {
-    const authError = searchParams.get('authError');
+    const params = new URLSearchParams(window.location.search);
+    const authError = params.get('authError');
     if (!authError) return;
     const cleanError = authError.replace(/\s+/g, ' ').trim();
     console.warn('[LOGIN_AUTH_ERROR]', cleanError);
     setMessage('로그인에 실패했습니다. 잠시 후 다시 시도해주세요.');
-  }, [searchParams]);
+  }, []);
 
   const handleKakaoLogin = async () => {
     setMessage('');
     setLoading(true);
     try {
       const supabase = getSupabaseBrowserClient();
+      const safeNext = getSafeNextFromSearch(window.location.search);
       // Keep redirect URI fixed for provider validation and carry `next`
       // through browser storage to avoid provider-side redirect URI errors.
       window.sessionStorage.setItem(POST_LOGIN_NEXT_KEY, safeNext);
