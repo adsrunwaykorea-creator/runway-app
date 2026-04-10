@@ -1,54 +1,16 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect } from "react";
+import { StaticHtmlLoader } from "@/components/site/StaticHtmlLoader";
+import { normalizeMarketingHtml } from "@/lib/marketingHtmlNormalize";
 
 export default function HomePage() {
-  const [error, setError] = useState<string | null>(null);
-
   useEffect(() => {
-    let cancelled = false;
-
-    const normalizeHtmlLinks = (html: string) =>
-      html
-        .replaceAll('href="style.css"', 'href="/html/style.css"')
-        .replaceAll('href="style.css?v=db-mobile-20260329"', 'href="/html/style.css?v=db-mobile-20260329"')
-        .replaceAll('href="index.html#services"', 'href="/#services"')
-        .replaceAll('href="index.html"', 'href="/"')
-        .replaceAll('href="sns.html"', 'href="/sns"')
-        .replaceAll('href="db.html"', 'href="/db"')
-        .replaceAll('href="login.html"', 'href="/login"');
-
-    const renderHtml = async () => {
-      try {
-        const response = await fetch('/html/index.html');
-        if (!response.ok) {
-          throw new Error(`Failed to load html: ${response.status}`);
-        }
-        const html = normalizeHtmlLinks(await response.text());
-
-        if (cancelled) return;
-
-        document.open();
-        document.write(html);
-        document.close();
-      } catch (e) {
-        if (!cancelled) {
-          const message = e instanceof Error ? e.message : 'Failed to render page';
-          setError(message);
-        }
-      }
-    };
-
-    void renderHtml();
-
+    document.body.classList.add("page-index");
     return () => {
-      cancelled = true;
+      document.body.classList.remove("page-index");
     };
   }, []);
 
-  if (error) {
-    return <main style={{ padding: 24 }}>페이지 로딩 실패: {error}</main>;
-  }
-
-  return <main style={{ padding: 24 }}>페이지 로딩 중...</main>;
+  return <StaticHtmlLoader src="/html/index.html" normalizeHtml={normalizeMarketingHtml} />;
 }
