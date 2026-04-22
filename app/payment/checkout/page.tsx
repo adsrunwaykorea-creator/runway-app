@@ -6,7 +6,7 @@ export default function PaymentCheckoutPage() {
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-zinc-50 to-slate-100">
-          <p className="text-zinc-600">로그인 상태 확인 중...</p>
+          <p className="text-zinc-600">결제 준비 중...</p>
         </div>
       }
     >

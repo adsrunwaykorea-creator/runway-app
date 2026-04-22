@@ -71,7 +71,9 @@ export default function AdminPage() {
 
       const { data: orderRows, error: orderError } = await supabase
         .from('orders')
-        .select('id, user_id, email, service, period, price, created_at, expires_at')
+        .select(
+          'id, user_id, email, guest_name, guest_phone, business_name, confirmation_channel, service, period, amount, price, created_at, expires_at'
+        )
         .order('created_at', { ascending: false });
 
       if (orderError) {
@@ -79,7 +81,9 @@ export default function AdminPage() {
       }
 
       const baseOrders = (orderRows as AdminOrderItem[] | null) ?? [];
-      const userIds = Array.from(new Set(baseOrders.map((order) => order.user_id).filter(Boolean)));
+      const userIds = Array.from(
+        new Set(baseOrders.map((order) => order.user_id).filter((userId): userId is string => Boolean(userId))),
+      );
 
       let profileById = new Map<string, ProfileRow>();
       if (userIds.length > 0) {
@@ -95,16 +99,19 @@ export default function AdminPage() {
         }
       }
 
-      const merged = baseOrders.map((order) => ({
-        ...order,
-        profile: profileById.get(order.user_id)
-          ? {
-              name: profileById.get(order.user_id)?.name ?? null,
-              phone: profileById.get(order.user_id)?.phone ?? null,
-              email: profileById.get(order.user_id)?.email ?? null,
-            }
-          : null,
-      }));
+      const merged = baseOrders.map((order) => {
+        const profile = order.user_id ? profileById.get(order.user_id) : undefined;
+        return {
+          ...order,
+          profile: profile
+            ? {
+                name: profile.name ?? null,
+                phone: profile.phone ?? null,
+                email: profile.email ?? null,
+              }
+            : null,
+        };
+      });
 
       if (!cancelled) {
         setOrders(merged);
@@ -131,7 +138,10 @@ export default function AdminPage() {
     });
 
     return {
-      thisMonthRevenue: thisMonthOrders.reduce((sum, order) => sum + (order.price ?? 0), 0),
+      thisMonthRevenue: thisMonthOrders.reduce(
+        (sum, order) => sum + (order.amount ?? order.price ?? 0),
+        0
+      ),
       thisMonthOrderCount: thisMonthOrders.length,
     };
   }, [orders]);
@@ -171,17 +181,25 @@ export default function AdminPage() {
                   className="w-full rounded-lg border border-zinc-200 bg-white p-3 text-sm text-slate-800 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
-                    <p className="font-semibold break-all text-slate-900">{order.email ?? '-'}</p>
+                    <p className="font-semibold break-all text-slate-900">
+                      {order.email ?? order.guest_name ?? '비회원 주문'}
+                    </p>
                     <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusMeta.className}`}>
                       {statusMeta.label}
                     </span>
                   </div>
 
                   <p className="mt-1">
-                    <span className="font-semibold">고객명</span>: {order.profile?.name ?? '-'}
+                    <span className="font-semibold">고객명</span>:{' '}
+                    {order.profile?.name ?? order.guest_name ?? '-'}
                   </p>
                   <p>
-                    <span className="font-semibold">전화번호</span>: {order.profile?.phone ?? '-'}
+                    <span className="font-semibold">전화번호</span>:{' '}
+                    {order.profile?.phone ?? order.guest_phone ?? '-'}
+                  </p>
+                  <p>
+                    <span className="font-semibold">주문 유형</span>:{' '}
+                    {order.user_id ? '회원 결제' : '비회원 결제'}
                   </p>
                   <p>
                     <span className="font-semibold">이메일</span>: {order.profile?.email ?? order.email ?? '-'}
@@ -193,7 +211,8 @@ export default function AdminPage() {
                     <span className="font-semibold">기간</span>: {order.period}
                   </p>
                   <p>
-                    <span className="font-semibold">결제금액</span>: {formatPrice(order.price)}
+                    <span className="font-semibold">결제금액</span>:{' '}
+                    {formatPrice(order.amount ?? order.price ?? 0)}
                   </p>
                   <p>
                     <span className="font-semibold">결제일</span>: {formatDate(order.created_at)}

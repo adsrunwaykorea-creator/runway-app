@@ -19,7 +19,8 @@ type OrderHistoryItem = {
   service: string;
   service_key?: string | null;
   period: string;
-  price: number;
+  amount?: number | null;
+  price?: number | null;
   created_at: string;
   expires_at: string | null;
 };
@@ -59,7 +60,7 @@ export default function MyPageClient() {
 
       const { data: ordersRows } = await supabase
         .from('orders')
-        .select('id, service, service_key, period, price, created_at, expires_at')
+        .select('id, service, service_key, period, amount, price, created_at, expires_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -315,6 +316,7 @@ export default function MyPageClient() {
               ) : (
                 <div className="space-y-3">
                   {orders.map((order) => {
+                    const paid = order.amount ?? order.price ?? 0;
                     const serviceStatus = getOrderStatus(order.expires_at);
                     const statusMeta = getStatusMeta(serviceStatus);
                     const guides = getStatusGuide(serviceStatus);
@@ -357,9 +359,9 @@ export default function MyPageClient() {
                         <span className="font-semibold">이용 기간</span>: {formatPeriod(order.period)}
                       </p>
                       <p>
-                        <span className="font-semibold">결제 금액</span>: {formatPrice(order.price)}
+                        <span className="font-semibold">결제 금액</span>: {formatPrice(paid)}
                       </p>
-                      {listPrice != null && listPrice > order.price ? (
+                      {listPrice != null && listPrice > paid ? (
                         <p className="text-xs text-zinc-400">
                           <span className="line-through">정가 {formatPrice(listPrice)}</span>
                           <span className="ml-2 text-zinc-500">(할인 적용가로 결제)</span>

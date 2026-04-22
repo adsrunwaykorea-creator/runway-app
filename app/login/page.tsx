@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
@@ -120,8 +121,10 @@ export default function LoginPage() {
     <main className="min-h-screen bg-gradient-to-b from-zinc-50 to-slate-100">
       <section className="mx-auto flex min-h-screen w-full max-w-6xl items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
         <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 shadow-[0_18px_45px_rgba(15,23,42,0.10)]">
-          <h1 className="mb-2 text-[1.8rem] font-extrabold text-slate-900">로그인</h1>
-          <p className="mb-6 text-sm text-zinc-600">카카오 계정으로 간편하게 로그인하세요.</p>
+          <h1 className="mb-2 text-[1.8rem] font-extrabold text-slate-900">관리자 로그인</h1>
+          <p className="mb-6 text-sm text-zinc-600">
+            관리자 전용 페이지 접근을 위해 카카오 계정으로 로그인하세요.
+          </p>
 
           <button
             type="button"
@@ -129,10 +132,20 @@ export default function LoginPage() {
             disabled={loading}
             className="h-11 w-full rounded-[10px] border border-[#f1d900] bg-[#fee500] text-[0.92rem] font-bold text-[#181600] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {loading ? "카카오 로그인 중..." : "카카오로 시작하기"}
+            {loading ? "카카오 로그인 중..." : "카카오로 관리자 로그인"}
           </button>
 
           {message ? <p className="mt-3 text-sm font-semibold text-red-600">{message}</p> : null}
+
+          <div className="mt-4 text-center text-sm text-zinc-600">
+            <p>
+              고객 신청/결제는 로그인 없이{" "}
+              <Link href="/payment" className="font-semibold text-zinc-900 hover:underline">
+                결제 안내
+              </Link>
+              에서 진행할 수 있습니다.
+            </p>
+          </div>
         </div>
       </section>
     </main>

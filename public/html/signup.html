@@ -188,15 +188,14 @@
                     <li><a href="/sns">SNS 마케팅</a></li>
                     <li><a href="/db">DB 마케팅</a></li>
                 </ul>
-                <a href="/login" class="btn nav-login-btn">회원가입/로그인</a>
-                <a href="#none" class="btn btn-primary nav-cta">상담 준비 중</a>
+                <a href="/#contact" class="btn btn-primary nav-cta">광고 상담</a>
             </div>
         </div>
     </nav>
 
     <main class="signup-shell">
         <section class="signup-card" aria-label="런웨이 회원가입">
-            <h1 class="signup-title">회원가입</h1>
+            <h1 class="signup-title">회원가입 없이 이용 가능</h1>
             <div class="social-signup" aria-label="간편회원가입">
                 <div class="social-signup-buttons">
                     <button id="kakaoSignupButton" type="button" class="social-signup-btn kakao">카카오로 시작하기</button>
@@ -206,54 +205,14 @@
             </div>
             <div class="signup-divider" role="presentation">또는 이메일로 가입하기</div>
             <p class="signup-desc">
-                계약/결제 직전 가입을 기준으로, 가입 시 profiles에 customer로 저장되고 필요 시 lead_id로 상담 리드와 연결됩니다.
+                런웨이는 비회원 신청/결제 구조로 운영됩니다. 서비스 신청과 결제 안내는 아래 버튼에서 바로 진행해주세요.
             </p>
 
-            <form id="signupForm" novalidate>
-                <div class="form-grid">
-                    <div class="login-form-group">
-                        <label for="name">이름</label>
-                        <input id="name" class="login-input" type="text" required>
-                    </div>
-                    <div class="login-form-group">
-                        <label for="companyName">회사명</label>
-                        <input id="companyName" class="login-input" type="text" required>
-                    </div>
-                </div>
-
-                <div class="login-form-group">
-                    <label for="phone">연락처(선택)</label>
-                    <input id="phone" class="login-input" type="text" placeholder="010-0000-0000">
-                </div>
-
-                <div class="login-form-group">
-                    <label for="email">이메일</label>
-                    <input id="email" class="login-input" type="email" autocomplete="email" required>
-                </div>
-
-                <div class="form-grid">
-                    <div class="login-form-group">
-                        <label for="password">비밀번호</label>
-                        <input id="password" class="login-input" type="password" autocomplete="new-password" required>
-                    </div>
-                    <div class="login-form-group">
-                        <label for="confirmPassword">비밀번호 확인</label>
-                        <input id="confirmPassword" class="login-input" type="password" autocomplete="new-password" required>
-                    </div>
-                </div>
-
-                <div id="errorMessage" class="auth-feedback" role="alert" aria-live="polite"></div>
-                <div id="successMessage" class="auth-feedback" role="status" aria-live="polite"></div>
-
-                <button id="submitButton" class="login-submit" type="submit">회원가입</button>
-            </form>
-
-            <div class="login-links">
-                <a href="/login">이미 계정이 있으신가요? 로그인</a>
+            <div class="login-links" style="display:grid; gap:0.75rem;">
+                <a href="/payment" class="login-submit" style="display:flex; align-items:center; justify-content:center; text-decoration:none;">결제 안내 보기</a>
+                <a href="/#contact" class="login-submit" style="display:flex; align-items:center; justify-content:center; text-decoration:none; background:#ffffff; color:#111827; border:1px solid #d1d5db;">광고 상담 신청</a>
             </div>
         </section>
     </main>
-
-    <script type="module" src="js/signup-page.js"></script>
 </body>
 </html>

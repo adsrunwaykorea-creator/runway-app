@@ -20,7 +20,6 @@
                     <li><a href="/db">DB 마케팅</a></li>
                     <li><a href="/payment" aria-current="page">결제</a></li>
                 </ul>
-                <a href="/login" class="btn nav-login-btn">회원가입/로그인</a>
             </div>
         </div>
     </nav>
@@ -29,8 +28,8 @@
         <section class="payment-wrap container">
             <div class="payment-header">
                 <p class="section-label">Payment</p>
-                <h1 id="paymentPageTitle">서비스를 선택하고 바로 결제하세요</h1>
-                <p class="payment-subtitle" id="paymentPageSubtitle">런웨이 톤에 맞춘 단순한 카드형 선택 방식으로 빠르게 진행할 수 있습니다.</p>
+                <h1 id="paymentPageTitle">회원가입 없이 바로 결제하세요</h1>
+                <p class="payment-subtitle" id="paymentPageSubtitle">서비스 선택 후 결제 단계에서 이름/전화번호를 입력하면 비회원으로도 즉시 신청할 수 있습니다.</p>
             </div>
 
             <div class="payment-panel">
@@ -96,6 +95,18 @@
                 <div class="payment-cta-trust" id="paymentCtaTrust">
                     <p class="payment-cta-trust-line" id="paymentCtaTrustDiscount"></p>
                     <p class="payment-cta-trust-line" id="paymentCtaTrustPeriod"></p>
+                </div>
+                <div style="margin-top: 1rem; border: 1px solid #e5e7eb; border-radius: 12px; padding: 0.9rem 1rem; background: #f8fafc;">
+                    <p style="font-size: 0.82rem; font-weight: 700; color: #0f172a; margin-bottom: 0.35rem;">결제 전 안내</p>
+                    <p style="font-size: 0.78rem; color: #475569; line-height: 1.6; margin: 0 0 0.35rem 0;">
+                        서비스 신청은 로그인 없이 진행됩니다. 결제 단계에서 신청 서비스, 기간, 금액을 최종 확인해주세요.
+                    </p>
+                    <p style="font-size: 0.78rem; color: #475569; line-height: 1.6; margin: 0 0 0.35rem 0;">
+                        카드 · 네이버페이 · 카카오페이 결제 가능
+                    </p>
+                    <p style="font-size: 0.78rem; color: #475569; line-height: 1.6; margin: 0;">
+                        결제 완료 후 확인서는 문자 또는 카카오로 순차 발송됩니다. <a href="/refund-policy" style="color:#111827; font-weight:600; text-decoration: underline;">청약철회·환불정책</a>
+                    </p>
                 </div>
 
                 <button type="button" class="btn btn-primary payment-submit" id="paymentButton">4. 결제하기</button>
@@ -636,10 +647,9 @@
                 try {
                     setFeedback("", "");
                     setPaymentLoading(true);
-                    /* 로그인·프로필은 /payment(PaymentPageClient)에서만 검사합니다.
-                       이 페이지는 iframe 안에서 돌며 @supabase/supabase-js 단독 클라이언트를 쓰기 때문에
-                       Next(@supabase/ssr) 쿠키 세션과 저장소가 달라 getUser()가 항상 비로그인처럼 보일 수 있습니다.
-                       결제 진입 시 세션·프로필은 /payment/checkout 에서 다시 확인합니다. */
+                    /* 비회원 결제를 기본으로 지원합니다.
+                       필수 고객 정보(이름/전화번호/확인서 수신 채널)는 /payment/checkout에서 입력받아 검증합니다.
+                       고객 로그인 없이 신청/결제가 가능하며, 관리자 인증은 별도 관리자 로그인 경로에서 운영합니다. */
                     var total = calculateAmount(selected.service, selected.period);
                     var paymentData = {
                         service: labels.service[selected.service] || selected.service,

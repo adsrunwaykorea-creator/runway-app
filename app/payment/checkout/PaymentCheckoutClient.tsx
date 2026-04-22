@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 
 declare global {
@@ -49,23 +50,27 @@ function loadTossScript() {
   });
 }
 
-const LOGIN_NEXT_PATH = '/payment/checkout';
+type ReceiptChannel = 'kakao' | 'sms';
 
 export default function PaymentCheckoutClient() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [message, setMessage] = useState('결제하기 버튼을 눌러 결제를 진행해주세요.');
   const [loading, setLoading] = useState(false);
   const [checkoutReady, setCheckoutReady] = useState(false);
   const [paramsError, setParamsError] = useState<string | null>(null);
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [businessName, setBusinessName] = useState('');
+  const [receiptChannel, setReceiptChannel] = useState<ReceiptChannel>('kakao');
   const [paymentContext, setPaymentContext] = useState<{
     service: string;
     serviceKey: string;
     period: string;
     price: number;
-    userId: string;
-    email: string | null;
   } | null>(null);
+
+  const formatPrice = (value: number) => `₩${value.toLocaleString('ko-KR')}`;
+  const periodLabel = paymentContext?.period === 'monthly' ? '1개월' : '3개월';
 
   useEffect(() => {
     let cancelled = false;
@@ -84,57 +89,33 @@ export default function PaymentCheckoutClient() {
 
       const supabase = getSupabaseBrowserClient();
       const { data, error } = await supabase.auth.getSession();
-
-      if (cancelled) return;
-
       if (error) {
         console.error('auth check error', error);
       }
 
-      if (!data.session) {
-        const qs = searchParams.toString();
-        const nextUrl = qs ? `${LOGIN_NEXT_PATH}?${qs}` : LOGIN_NEXT_PATH;
-        router.replace(`/login?next=${encodeURIComponent(nextUrl)}`);
-        return;
+      const user = data.session?.user ?? null;
+      if (user?.id) {
+        const { data: profileRow, error: profileError } = await supabase
+          .from('profiles')
+          .select('name, phone')
+          .eq('id', user.id)
+          .maybeSingle();
+        if (!cancelled && !profileError) {
+          if (profileRow?.name) setCustomerName(profileRow.name);
+          if (profileRow?.phone) setCustomerPhone(profileRow.phone);
+        }
       }
 
-      const userId = data.session.user.id;
-      const { data: profileRow, error: profileError } = await supabase
-        .from('profiles')
-        .select('name, phone')
-        .eq('id', userId)
-        .maybeSingle();
-
-      if (cancelled) return;
-
-      if (profileError) {
-        console.error('profile check error', profileError);
-        const qs = searchParams.toString();
-        const mypageNext = qs ? `${LOGIN_NEXT_PATH}?${qs}` : LOGIN_NEXT_PATH;
-        router.replace(`/mypage?next=${encodeURIComponent(mypageNext)}`);
-        return;
+      if (!cancelled) {
+        setPaymentContext({
+          service,
+          serviceKey,
+          period,
+          price,
+        });
+        setCheckoutReady(true);
+        setMessage('결제하기 버튼을 눌러 결제를 진행해주세요.');
       }
-
-      const name = profileRow?.name?.trim() ?? '';
-      const phone = profileRow?.phone?.trim() ?? '';
-      if (!name || !phone) {
-        const qs = searchParams.toString();
-        const mypageNext = qs ? `${LOGIN_NEXT_PATH}?${qs}` : LOGIN_NEXT_PATH;
-        router.replace(`/mypage?next=${encodeURIComponent(mypageNext)}`);
-        return;
-      }
-
-      const user = data.session.user;
-      setPaymentContext({
-        service,
-        serviceKey,
-        period,
-        price,
-        userId: user.id,
-        email: user.email ?? null,
-      });
-      setCheckoutReady(true);
-      setMessage('결제하기 버튼을 눌러 결제를 진행해주세요.');
     };
 
     void initializeCheckout();
@@ -142,10 +123,21 @@ export default function PaymentCheckoutClient() {
     return () => {
       cancelled = true;
     };
-  }, [router, searchParams]);
+  }, [searchParams]);
 
   const handleStartPayment = async () => {
     if (!paymentContext || loading) return;
+    const trimmedName = customerName.trim();
+    const trimmedPhone = customerPhone.trim();
+    if (!trimmedName) {
+      setMessage('이름을 입력해주세요.');
+      return;
+    }
+    if (!trimmedPhone) {
+      setMessage('전화번호를 입력해주세요.');
+      return;
+    }
+
     setLoading(true);
     try {
       await loadTossScript();
@@ -156,14 +148,16 @@ export default function PaymentCheckoutClient() {
       }
 
       const orderId = `rw_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      const trimmedBusiness = businessName.trim();
       const pendingOrder = {
         service: paymentContext.service,
         service_key: paymentContext.serviceKey,
         period: paymentContext.period,
-        price: paymentContext.price,
-        user_id: paymentContext.userId,
-        email: paymentContext.email,
-        status: 'paid',
+        amount: paymentContext.price,
+        customer_name: trimmedName,
+        customer_phone: trimmedPhone,
+        business_name: trimmedBusiness.length > 0 ? trimmedBusiness : null,
+        receipt_channel: receiptChannel,
       };
       window.localStorage.setItem(`runway_order_${orderId}`, JSON.stringify(pendingOrder));
 
@@ -173,7 +167,6 @@ export default function PaymentCheckoutClient() {
         amount: paymentContext.price,
         orderId,
         orderName: `${paymentContext.service} / ${paymentContext.period}`,
-        customerEmail: paymentContext.email ?? undefined,
         successUrl: `${window.location.origin}/payment/success`,
         failUrl: `${window.location.origin}/payment/fail`,
       });
@@ -201,7 +194,7 @@ export default function PaymentCheckoutClient() {
   if (!checkoutReady) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-zinc-50 to-slate-100">
-        <p className="text-zinc-600">로그인 상태 확인 중...</p>
+        <p className="text-zinc-600">결제 정보를 확인 중...</p>
       </div>
     );
   }
@@ -209,7 +202,106 @@ export default function PaymentCheckoutClient() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-zinc-50 to-slate-100 p-6">
       <section className="mx-auto w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+        {/* DEV NOTE: 실제 운영 전 테스트 중인 결제 흐름 */}
         <h1 className="mb-2 text-xl font-bold text-slate-900">결제 진행</h1>
+        <p className="mb-4 text-sm text-zinc-600">
+          현재 테스트 결제 모드입니다. 결제 완료는 테스트 결제 완료로 처리되며, 확인서는 카카오 또는 문자 기준으로 기록됩니다.
+        </p>
+
+        {paymentContext ? (
+          <div className="mb-4 rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-700">
+            <p>
+              <span className="font-semibold text-zinc-900">신청 서비스</span>: {paymentContext.service}
+            </p>
+            <p>
+              <span className="font-semibold text-zinc-900">기간</span>: {periodLabel}
+            </p>
+            <p>
+              <span className="font-semibold text-zinc-900">금액</span>: {formatPrice(paymentContext.price)}
+            </p>
+            <p className="mt-2 text-xs leading-6 text-zinc-600">
+              카드 · 네이버페이 · 카카오페이 결제 가능
+              <br />
+              결제 완료 후 확인서는 문자 또는 카카오로 순차 발송됩니다.
+              <br />
+              <Link href="/refund-policy" className="font-semibold text-zinc-800 underline underline-offset-2">
+                청약철회·환불정책 확인
+              </Link>
+            </p>
+          </div>
+        ) : null}
+
+        <div className="mb-3 space-y-3">
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-zinc-700" htmlFor="guest-name">
+              이름
+            </label>
+            <input
+              id="guest-name"
+              type="text"
+              value={customerName}
+              onChange={(event) => setCustomerName(event.target.value)}
+              placeholder="홍길동"
+              className="h-11 w-full rounded-md border border-zinc-300 px-3 text-sm text-zinc-900 outline-none focus:border-zinc-500"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-zinc-700" htmlFor="guest-phone">
+              전화번호
+            </label>
+            <input
+              id="guest-phone"
+              type="tel"
+              value={customerPhone}
+              onChange={(event) => setCustomerPhone(event.target.value)}
+              placeholder="010-1234-5678"
+              className="h-11 w-full rounded-md border border-zinc-300 px-3 text-sm text-zinc-900 outline-none focus:border-zinc-500"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-semibold text-zinc-700" htmlFor="business-name">
+              상호명 <span className="font-normal text-zinc-500">(선택)</span>
+            </label>
+            <input
+              id="business-name"
+              type="text"
+              value={businessName}
+              onChange={(event) => setBusinessName(event.target.value)}
+              placeholder="사업자 또는 매장명"
+              className="h-11 w-full rounded-md border border-zinc-300 px-3 text-sm text-zinc-900 outline-none focus:border-zinc-500"
+            />
+          </div>
+          <fieldset>
+            <legend className="mb-1 block text-xs font-semibold text-zinc-700">확인서 수신 채널</legend>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setReceiptChannel('kakao')}
+                aria-pressed={receiptChannel === 'kakao'}
+                className={`flex h-11 items-center justify-center rounded-md border text-sm font-medium transition ${
+                  receiptChannel === 'kakao'
+                    ? 'border-zinc-900 bg-zinc-900 text-white'
+                    : 'border-zinc-300 text-zinc-800'
+                }`}
+              >
+                카카오
+              </button>
+              <button
+                type="button"
+                onClick={() => setReceiptChannel('sms')}
+                aria-pressed={receiptChannel === 'sms'}
+                className={`flex h-11 items-center justify-center rounded-md border text-sm font-medium transition ${
+                  receiptChannel === 'sms'
+                    ? 'border-zinc-900 bg-zinc-900 text-white'
+                    : 'border-zinc-300 text-zinc-800'
+                }`}
+              >
+                문자
+              </button>
+            </div>
+          </fieldset>
+        </div>
+
         <p className="mb-4 text-sm text-zinc-600">{message}</p>
         <button
           type="button"
@@ -219,6 +311,7 @@ export default function PaymentCheckoutClient() {
         >
           {loading ? '결제창 여는 중...' : '결제하기'}
         </button>
+        <p className="mt-3 text-center text-xs text-zinc-500">카드 · 네이버페이 · 카카오페이 결제 가능</p>
       </section>
     </main>
   );
