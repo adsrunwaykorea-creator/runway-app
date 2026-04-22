@@ -10,9 +10,9 @@ const POST_LOGIN_NEXT_KEY = "post_login_next";
 function getSafeNextFromSearch(search: string): string {
   const params = new URLSearchParams(search);
   const next = params.get("next");
-  if (!next) return "/payment";
-  if (!next.startsWith("/")) return "/payment";
-  if (next.startsWith("//")) return "/payment";
+  if (!next) return "/admin";
+  if (!next.startsWith("/")) return "/admin";
+  if (next.startsWith("//")) return "/admin";
   return next;
 }
 
@@ -51,10 +51,9 @@ export default function LoginPage() {
         });
 
         if (!error && !cancelled) {
-          const safeNext = getSafeNextFromSearch(window.location.search);
           // Remove token fragment from URL after restoring session.
-          window.history.replaceState({}, "", "/login");
-          router.replace(safeNext ?? "/mypage");
+          window.history.replaceState({}, "", "/auth/callback");
+          router.replace("/auth/callback");
           return;
         }
       }

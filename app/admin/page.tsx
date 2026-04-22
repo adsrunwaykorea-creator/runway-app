@@ -69,6 +69,24 @@ export default function AdminPage() {
         return;
       }
 
+      const { data: roleRow, error: roleError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userData.user.id)
+        .maybeSingle();
+
+      if (roleError) {
+        console.error('[ADMIN_ROLE_LOAD_ERROR]', roleError);
+        if (!cancelled) router.replace('/');
+        return;
+      }
+
+      const role = (roleRow?.role ?? '').toString().toLowerCase();
+      if (role !== 'admin' && role !== 'manager') {
+        if (!cancelled) router.replace('/');
+        return;
+      }
+
       const { data: orderRows, error: orderError } = await supabase
         .from('orders')
         .select(
