@@ -7236,6 +7236,213 @@ body.page-payment {
     box-shadow: 0 8px 20px rgba(59, 130, 246, 0.14);
 }
 
+/* ----- 이용 기간 카드 (전환·추천 플랜 UI) ----- */
+.payment-grid--period {
+    align-items: stretch;
+    gap: 1rem;
+}
+
+.payment-grid--period .payment-period-card {
+    height: 100%;
+    min-height: 300px;
+}
+
+.payment-period-card {
+    position: relative;
+    min-height: 300px;
+    padding: 1.25rem 1.15rem 1.2rem;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 0.55rem;
+    text-align: left;
+    border-radius: 14px;
+    border-color: rgba(148, 163, 184, 0.55);
+    background: #ffffff;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+    transition: border-color 0.2s ease, box-shadow 0.22s ease, transform 0.22s ease, background 0.2s ease;
+}
+
+.payment-period-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(59, 130, 246, 0.45);
+    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.1), 0 4px 12px rgba(37, 99, 235, 0.12);
+}
+
+.payment-period-card--featured {
+    border-color: rgba(37, 99, 235, 0.38);
+    background: linear-gradient(180deg, #fbfdff 0%, #f3f7ff 55%, #eef4ff 100%);
+}
+
+.payment-period-card--featured:hover {
+    border-color: rgba(37, 99, 235, 0.55);
+}
+
+.payment-period-card__badge {
+    position: absolute;
+    top: 12px;
+    right: 46px;
+    z-index: 2;
+    padding: 0.28rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: #1e3a8a;
+    background: linear-gradient(135deg, #e0ecff 0%, #dbeafe 100%);
+    border: 1px solid rgba(37, 99, 235, 0.35);
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.12);
+}
+
+.payment-period-card__check {
+    position: absolute;
+    top: 11px;
+    right: 12px;
+    z-index: 2;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    background: transparent;
+    opacity: 0;
+    transform: scale(0.85);
+    transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+    pointer-events: none;
+}
+
+.payment-period-card.is-selected .payment-period-card__check {
+    opacity: 1;
+    transform: scale(1);
+    border-color: #2563eb;
+    background: #2563eb;
+    box-shadow: 0 2px 10px rgba(37, 99, 235, 0.35);
+}
+
+.payment-period-card.is-selected .payment-period-card__check::after {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 4px;
+    width: 6px;
+    height: 10px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.payment-period-card.payment-card--period-monthly.is-selected .payment-period-card__check {
+    border-color: #dc2626;
+    background: #dc2626;
+    box-shadow: 0 2px 10px rgba(220, 38, 38, 0.35);
+}
+
+.payment-period-card.payment-card--period-quarterly.is-selected .payment-period-card__check {
+    border-color: #16a34a;
+    background: #16a34a;
+    box-shadow: 0 2px 10px rgba(22, 163, 74, 0.35);
+}
+
+.payment-period-card__head {
+    padding-right: 2.5rem;
+    margin-bottom: 0.15rem;
+}
+
+.payment-period-card .payment-period-card__title {
+    display: block;
+    font-size: 1.22rem;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+}
+
+.payment-period-card__tagline {
+    margin: 0.35rem 0 0;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.payment-period-card__caption:empty {
+    display: none;
+}
+
+.payment-period-card__caption:not(:empty) {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #b45309;
+    line-height: 1.35;
+}
+
+.payment-period-card__mid {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-height: 0;
+}
+
+.payment-period-card__meta {
+    margin-top: 0.25rem;
+}
+
+.payment-period-card .payment-timer {
+    display: none !important;
+}
+
+.payment-period-card__strike {
+    font-size: 0.88rem !important;
+    margin-top: 0.15rem;
+}
+
+.payment-period-card__saving {
+    margin-top: 0.2rem !important;
+    font-size: 0.86rem !important;
+}
+
+.payment-period-card__price-block {
+    margin-top: auto;
+    padding-top: 0.85rem;
+    border-top: 1px solid rgba(15, 23, 42, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.payment-period-card__final {
+    font-size: 1.38rem !important;
+    font-weight: 800 !important;
+    color: #1d4ed8 !important;
+    line-height: 1.2 !important;
+}
+
+.payment-period-card__hint {
+    font-size: 0.76rem;
+    color: #64748b;
+    font-weight: 500;
+    line-height: 1.45;
+}
+
+#periodOptions .payment-period-card.is-selected:not(.payment-card--period-monthly):not(.payment-card--period-quarterly) {
+    border-color: #2563eb;
+    background: linear-gradient(180deg, #f8fbff 0%, #eff6ff 52%, #e8f1ff 100%);
+    box-shadow: 0 14px 34px rgba(37, 99, 235, 0.2), 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+#periodOptions .payment-period-card--featured.is-selected:not(.payment-card--period-quarterly) {
+    border-color: #1d4ed8;
+    box-shadow: 0 16px 38px rgba(29, 78, 216, 0.22), 0 4px 14px rgba(15, 23, 42, 0.07);
+}
+
+.payment-period-card .payment-discount-rate {
+    background: rgba(37, 99, 235, 0.12);
+    color: #1d4ed8;
+    border: 1px solid rgba(37, 99, 235, 0.22);
+    font-weight: 800;
+}
+
 /* 연장 플로우: 1개월=긴급(빨강), 3개월=혜택(초록) */
 .payment-card.payment-card--period-monthly {
     border-color: rgba(220, 38, 38, 0.42);
@@ -7439,6 +7646,29 @@ body.page-payment {
 
     .payment-grid {
         grid-template-columns: 1fr;
+    }
+
+    .payment-period-card {
+        min-height: 0;
+    }
+
+    .payment-grid--period .payment-period-card {
+        min-height: 272px;
+    }
+
+    .payment-period-card__badge {
+        right: 42px;
+        top: 10px;
+        padding: 0.24rem 0.48rem;
+        font-size: 0.62rem;
+    }
+
+    .payment-period-card .payment-period-card__title {
+        font-size: 1.12rem;
+    }
+
+    .payment-period-card__final {
+        font-size: 1.24rem !important;
     }
 
     .payment-panel {

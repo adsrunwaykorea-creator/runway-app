@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "청약철회·환불정책 | 런웨이",
   description:
-    "런웨이 서비스 신청 및 결제와 관련된 청약철회, 환불, 중도 해지 기준을 안내합니다.",
+    "런웨이 광고 운영 서비스의 청약철회, 중도해지, 환불 및 비용 공제 기준을 안내합니다.",
 };
 
 const articleSectionClass = "space-y-4 rounded-2xl border border-zinc-200 bg-white p-6 md:p-8";
@@ -21,184 +21,201 @@ export default function RefundPolicyPage() {
             청약철회·환불정책
           </h1>
           <p className="max-w-3xl text-sm leading-7 text-zinc-700 md:text-base">
-            런웨이 서비스 신청 및 결제와 관련된 청약철회, 환불, 중도 해지 기준을
-            안내합니다.
+            런웨이 서비스 신청 및 결제와 관련된 청약철회, 환불, 중도 해지 기준을 안내합니다.
           </p>
-          <div>
+          <div
+            className="max-w-3xl rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm leading-relaxed text-zinc-800 md:text-base"
+            role="note"
+          >
+            서비스 시작 전에는 전액 환불이 가능하며, 서비스 시작 후 중도해지 시에는 운영관리비
+            일할 계산금액, 총 결제금액의 10%, 별도 승인 또는 제공 완료된 작업비를 공제한 후
+            환불합니다. 광고 플랫폼에 고객이 직접 결제한 광고비는 회사의 환불 대상에 포함되지
+            않습니다.
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/payment"
+              className="inline-flex items-center rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-700"
+            >
+              결제 페이지로 이동
+            </Link>
             <a
               href="#inquiry-section"
-              className="inline-flex items-center rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-700"
+              className="inline-flex items-center rounded-full border border-zinc-300 bg-white px-5 py-2.5 text-sm font-medium text-zinc-900 transition hover:bg-zinc-50"
             >
               문의하기
             </a>
           </div>
         </header>
 
-        <article className="space-y-5">
+        <article className="space-y-6 md:space-y-7">
           <section className={articleSectionClass}>
+            <h2 className={headingClass}>제1조. 목적</h2>
             <p className={bodyClass}>
-              런웨이(이하 “회사”)는 고객이 온라인으로 신청하고 결제하는 광고 운영관리
-              서비스에 대해 아래와 같은 청약철회 및 환불 기준을 운영합니다.
+              본 정책은 런웨이(이하 &quot;회사&quot;)가 제공하는 광고 운영 및 관련 부가 서비스의 온라인
+              신청·결제와 관련하여, 고객의 청약철회, 중도해지, 환불 및 비용 공제 기준을 정함을
+              목적으로 합니다.
             </p>
           </section>
 
           <section className={articleSectionClass}>
-            <h2 className={headingClass}>제1조. 적용 대상</h2>
-            <ol className={`${bodyClass} list-decimal space-y-2 pl-5`}>
+            <h2 className={headingClass}>제2조. 적용 대상</h2>
+            <ol className={`${bodyClass} list-decimal space-y-3 pl-5`}>
               <li>
-                본 정책은 런웨이 홈페이지 또는 런웨이가 제공한 온라인 결제 링크를 통해
-                신청·결제된 서비스에 적용됩니다.
+                본 정책은 회사 홈페이지 또는 회사가 제공하는 온라인 결제 링크를 통하여 신청·결제된
+                광고 운영관리 서비스에 적용됩니다.
               </li>
               <li>
-                런웨이의 결제 대상은 광고 플랫폼 집행비가 아닌 운영관리비 및 별도 안내된
-                제작·세팅 비용입니다.
+                회사의 서비스 대금은 광고 플랫폼 집행비가 아닌 운영관리비 및 별도로 합의된
+                제작·세팅·부가 작업비를 의미합니다.
               </li>
               <li>
-                네이버, 메타, 구글, 카카오 등 광고 플랫폼에 고객이 직접 결제한 광고비는
-                회사가 수령하거나 보관하지 않으므로, 런웨이의 환불 대상에 포함되지
-                않습니다. 해당 광고비의 취소·환불은 각 플랫폼의 정책에 따릅니다.
+                네이버, 메타, 구글, 카카오 등 광고 플랫폼에 고객이 직접 결제한 광고비는 회사가
+                수령하거나 보관하지 않으므로, 회사의 환불 대상에 포함되지 않습니다.
               </li>
             </ol>
           </section>
 
           <section className={articleSectionClass}>
-            <h2 className={headingClass}>제2조. 서비스 시작일의 기준</h2>
-            <ol className={`${bodyClass} list-decimal space-y-2 pl-5`}>
+            <h2 className={headingClass}>제3조. 서비스 시작일의 기준</h2>
+            <ol className={`${bodyClass} list-decimal space-y-3 pl-5`}>
               <li>
-                서비스 시작일은 아래 각 호 중 먼저 도래하는 날로 합니다.
-                <ul className="mt-2 space-y-2 pl-1">
+                서비스 시작일은 다음 각 호 중 먼저 도래하는 날로 합니다.
+                <ul className="mt-2 list-[lower-alpha] space-y-2 pl-5 marker:text-zinc-600">
                   <li>
-                    가. 고객이 결제를 완료한 후, 광고 운영에 필요한 계정 권한·소재·사업자
-                    정보 등 필수 자료 제공을 완료하고 회사가 업무 착수를 통지한 날
+                    고객이 결제를 완료한 후, 회사가 광고 운영에 필요한 계정 접근 권한, 사업자
+                    정보, 소재 자료, 랜딩페이지 자료 등 필수 정보를 제공받아 업무 착수가 가능한
+                    상태가 된 날
                   </li>
                   <li>
-                    나. 고객이 카카오톡, 문자, 이메일 등으로 즉시 시작 의사를 표시하여
+                    고객이 카카오톡, 문자, 이메일 기타 전자적 방법으로 서비스 시작 의사를 표시하여
                     회사가 이에 따라 업무를 개시한 날
                   </li>
                 </ul>
               </li>
               <li>
-                전략 수립, 계정 점검, 광고계정 연동, 픽셀·태그 점검, 소재 검토, 캠페인 구조
-                설계, 리포트 세팅 등은 서비스 착수 업무에 포함됩니다.
+                전략 수립, 계정 점검, 광고계정 생성 또는 점검, 픽셀·태그 설정, 소재 검토, 캠페인
+                구조 설계, 리포트 세팅 등은 서비스 착수 업무에 포함됩니다.
               </li>
             </ol>
           </section>
 
           <section className={articleSectionClass}>
-            <h2 className={headingClass}>제3조. 청약철회</h2>
-            <ol className={`${bodyClass} list-decimal space-y-2 pl-5`}>
-              <li>고객은 관련 법령에서 정한 범위 내에서 청약철회를 요청할 수 있습니다.</li>
+            <h2 className={headingClass}>제4조. 청약철회</h2>
+            <ol className={`${bodyClass} list-decimal space-y-3 pl-5`}>
               <li>
-                고객이 계약내용 확인서 또는 결제 확인서를 받은 날부터 7일 이내이고, 아직
-                서비스가 시작되지 않은 경우에는 결제한 운영관리비 전액 환불을 원칙으로
-                합니다.
+                고객은 계약체결일 또는 서비스 이용가능일로부터 7일 이내에 청약철회를 요청할 수
+                있습니다.
               </li>
               <li>
-                다만 고객이 7일 이내라도 서비스의 즉시 시작을 요청하여 실제 업무가 개시된
-                경우에는, 이미 제공된 서비스 범위에 따라 환불금액이 달라질 수 있습니다.
+                전항의 기간 내이고, 아직 서비스가 시작되지 않은 경우에는 회사는 고객에게 결제대금
+                전액을 환불합니다.
               </li>
               <li>
-                관련 법령상 청약철회가 제한되거나 예외가 인정되는 경우에는 그 기준을 우선
-                적용합니다.
+                다만, 고객의 별도 승인에 따라 이미 제공이 완료된 제작물, 세팅 작업, 부가 작업이
+                있는 경우, 회사는 해당 작업의 실제 제공 범위에 해당하는 금액을 공제한 후 환불할 수
+                있습니다.
+              </li>
+              <li>
+                청약철회는 고객이 회사에 전자우편, 고객센터, 카카오채널 또는 회사가 안내한 방법으로
+                의사표시를 도달시킨 때 효력이 발생합니다.
               </li>
             </ol>
           </section>
 
           <section className={articleSectionClass}>
-            <h2 className={headingClass}>제4조. 환불 기준</h2>
-            <div className={`${bodyClass} space-y-4`}>
-              <div>
-                <p className="font-semibold text-zinc-900">1. 서비스 시작 전 취소</p>
-                <p>
-                  고객이 서비스 시작 전에 취소를 요청한 경우, 결제한 운영관리비는 전액
-                  환불합니다.
-                </p>
-              </div>
-              <div>
-                <p className="font-semibold text-zinc-900">2. 서비스 시작 후 중도 해지</p>
-                <p>
-                  고객이 서비스 시작 후 해지를 요청한 경우, 환불금액은 아래 기준에 따라
-                  산정합니다.
-                </p>
-                <ul className="mt-2 list-disc space-y-2 pl-5">
-                  <li>
-                    총 결제금액에서 ① 서비스 시작일부터 해지 요청 접수일까지 진행된
-                    운영관리비를 일할 계산한 금액과 ② 고객이 별도로 승인하거나 제공 완료된
-                    제작비, 세팅비, 부가 작업비를 공제한 후 환불합니다.
-                  </li>
-                  <li>
-                    이미 완료된 리포트 작성, 계정 세팅, 소재 기획, 픽셀·전환 설정, 랜딩 연동,
-                    캠페인 구조 설계 등은 실제 제공된 서비스 범위로 봅니다.
-                  </li>
+            <h2 className={headingClass}>제5조. 서비스 시작 후 중도해지 및 환불</h2>
+            <ol className={`${bodyClass} list-decimal space-y-3 pl-5`}>
+              <li>
+                서비스가 시작된 이후 고객의 사유로 계약을 중도해지하는 경우, 회사는 총 결제금액에서
+                아래 각 호의 금액을 공제한 후 잔액을 환불합니다.
+                <ul className="mt-2 list-[lower-alpha] space-y-2 pl-5 marker:text-zinc-600">
+                  <li>서비스 시작일부터 해지 요청 접수일까지의 운영관리비를 일할 계산한 금액</li>
+                  <li>총 결제금액의 10%에 해당하는 금액</li>
+                  <li>고객이 별도로 승인하였거나 이미 제공 완료된 제작비, 세팅비, 부가 작업비</li>
                 </ul>
-              </div>
-              <div>
-                <p className="font-semibold text-zinc-900">3. 광고비 관련</p>
-                <p>
-                  광고 플랫폼에 고객이 직접 충전하거나 결제한 광고비는 런웨이의 수령 금액이
-                  아니므로 런웨이가 환불하지 않습니다.
-                </p>
-              </div>
-              <div>
-                <p className="font-semibold text-zinc-900">4. 회사 귀책 사유</p>
-                <p>
-                  회사의 명백한 귀책사유로 정상적인 서비스 제공이 어려운 경우에는, 미제공
-                  기간 또는 미이행 범위에 해당하는 금액을 협의 후 환불합니다.
-                </p>
-              </div>
-            </div>
-          </section>
-
-          <section className={articleSectionClass}>
-            <h2 className={headingClass}>제5조. 환불 요청 방법</h2>
-            <ol className={`${bodyClass} list-decimal space-y-2 pl-5`}>
+              </li>
+              <li>전항 제1호 나목의 10% 공제는 서비스 시작 이후의 중도해지에 한하여 적용합니다.</li>
               <li>
-                환불 요청은 카카오톡 채널, 이메일, 또는 회사가 안내한 고객 응대 채널을 통해
-                접수할 수 있습니다.
+                제1항 제1호 다목의 비용은 사전에 고객과 합의되었거나, 실제 제공 완료 사실이
+                확인되는 항목에 한하여 적용합니다.
               </li>
               <li>
-                고객은 본인 확인 및 결제 확인을 위해 성함, 연락처, 결제일, 결제수단, 신청
-                서비스명을 함께 제출해야 합니다.
-              </li>
-              <li>
-                회사는 접수 후 환불 가능 여부와 정산 내역을 고객에게 안내합니다.
+                환불금이 없는 경우 회사는 환불하지 않을 수 있으며, 이미 제공된 서비스 또는 완료된
+                작업 범위가 결제금액을 초과하는 경우 추가 청구는 별도 계약 또는 합의가 없는 한 하지
+                않습니다.
               </li>
             </ol>
           </section>
 
           <section className={articleSectionClass}>
-            <h2 className={headingClass}>제6조. 환불 처리 기간</h2>
-            <ol className={`${bodyClass} list-decimal space-y-2 pl-5`}>
+            <h2 className={headingClass}>제6조. 광고비에 관한 특칙</h2>
+            <ol className={`${bodyClass} list-decimal space-y-3 pl-5`}>
+              <li>광고 플랫폼에 고객이 직접 결제한 광고비는 회사의 운영관리비와 별개입니다.</li>
               <li>
-                관련 법령에 따라 환불이 이루어져야 하는 경우, 회사는 법정 기한 내 환불을
-                처리합니다.
+                광고비의 취소, 환불, 잔액, 정산 및 소멸 여부는 각 광고 플랫폼의 정책에 따르며,
+                회사는 이에 대하여 책임을 부담하지 않습니다.
               </li>
               <li>
-                회사는 특별한 사정이 없는 한 환불 확정일로부터 3영업일 이내 결제 취소 또는
-                계좌 환불 절차를 진행합니다.
-              </li>
-              <li>
-                카드사, PG사, 은행 등 결제수단별 처리 일정에 따라 실제 반영 시점은 다를 수
-                있습니다.
+                회사는 고객 요청 시 광고비 집행 내역 확인에 필요한 범위에서 협조할 수 있습니다.
               </li>
             </ol>
           </section>
 
           <section className={articleSectionClass}>
-            <h2 className={headingClass}>제7조. 분쟁처리</h2>
-            <ol className={`${bodyClass} list-decimal space-y-2 pl-5`}>
+            <h2 className={headingClass}>제7조. 제작물 및 세팅 작업에 관한 기준</h2>
+            <ol className={`${bodyClass} list-decimal space-y-3 pl-5`}>
               <li>
-                고객 불만, 이의제기, 정산 문의는 회사 고객응대 채널을 통해 접수할 수
-                있습니다.
+                제작물, 랜딩페이지 수정, 배너 제작, 광고 세팅, 픽셀 설치, 전환 이벤트 구성, CRM
+                또는 폼 연동 등 별도 작업은 운영관리 서비스와 구분되는 독립 작업으로 볼 수 있습니다.
               </li>
               <li>
-                본 정책에 정하지 않은 사항은 관련 법령 및 회사 이용약관에 따릅니다.
+                전항의 작업이 별도 견적, 메시지 승인, 계약서, 결제내역, 작업 산출물 등으로 확인되는
+                경우, 회사는 해당 비용을 환불 대상에서 제외하거나 공제할 수 있습니다.
               </li>
               <li>
-                본 정책보다 관련 법령이 고객에게 유리한 경우에는 관련 법령을 우선
-                적용합니다.
+                고객이 작업 진행을 승인한 이후 회사가 상당한 범위의 업무를 수행한 경우, 고객이
+                중도해지를 요청하더라도 해당 작업비는 환불되지 않을 수 있습니다.
               </li>
             </ol>
+          </section>
+
+          <section className={articleSectionClass}>
+            <h2 className={headingClass}>제8조. 환불 절차 및 시기</h2>
+            <ol className={`${bodyClass} list-decimal space-y-3 pl-5`}>
+              <li>
+                고객은 회사가 안내한 고객센터, 전자우편, 카카오채널 기타 회사가 정한 방법으로 환불
+                또는 해지를 요청할 수 있습니다.
+              </li>
+              <li>
+                회사는 환불 요청 접수 후 환불금 산정에 필요한 자료를 확인한 뒤, 특별한 사정이 없는
+                한 7영업일 이내에 환불 여부 및 금액을 고객에게 안내합니다.
+              </li>
+              <li>
+                실제 환불 반영 시점은 결제수단, PG사, 카드사 또는 금융기관의 처리 일정에 따라 달라질
+                수 있습니다.
+              </li>
+            </ol>
+          </section>
+
+          <section className={articleSectionClass}>
+            <h2 className={headingClass}>제9조. 문의처</h2>
+            <p className={`${bodyClass} mb-3`}>
+              본 정책과 관련한 문의는 아래 채널을 통하여 접수할 수 있습니다.
+            </p>
+            <ul className={`${bodyClass} list-disc space-y-2 pl-5`}>
+              <li>상호명: 런웨이</li>
+              <li>
+                이메일:{" "}
+                <a
+                  href="mailto:ads.runwaykorea@gmail.com"
+                  className="font-medium text-zinc-900 underline underline-offset-2 hover:text-zinc-600"
+                >
+                  ads.runwaykorea@gmail.com
+                </a>
+              </li>
+              <li>고객 문의 채널: 회사 홈페이지 또는 카카오채널</li>
+            </ul>
           </section>
         </article>
 
@@ -206,38 +223,48 @@ export default function RefundPolicyPage() {
           id="inquiry-section"
           className="rounded-2xl border border-zinc-300 bg-zinc-900 p-6 text-zinc-100 md:p-8"
         >
-          <h2 className="text-xl font-semibold md:text-2xl">부칙 및 문의 채널</h2>
-          <dl className="mt-5 space-y-4 text-sm leading-7 md:text-base">
+          <h2 className="text-xl font-semibold md:text-2xl">요약 정보</h2>
+          <dl className="mt-5 space-y-3 text-sm leading-6 md:text-base md:leading-7">
             <div>
               <dt className="font-semibold text-white">시행일</dt>
-              <dd>2024.04.21</dd>
+              <dd>2026.04.23</dd>
             </div>
             <div>
               <dt className="font-semibold text-white">최종 수정일</dt>
-              <dd>2024.04.21</dd>
+              <dd>2026.04.23</dd>
             </div>
             <div>
-              <dt className="font-semibold text-white">문의 이메일</dt>
-              <dd>
-                <a
-                  className="underline decoration-zinc-300 underline-offset-4 hover:text-white"
-                  href="mailto:ads.runwaykorea@gmail.com"
-                >
-                  ads.runwaykorea@gmail.com
-                </a>
+              <dt className="font-semibold text-white">상호명</dt>
+              <dd>런웨이</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-white">대표자명</dt>
+              <dd>박제혁</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-white">사업자등록번호</dt>
+              <dd>326-02-03126</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-white">문의</dt>
+              <dd className="space-y-1.5">
+                <p>이메일: ads.runwaykorea@gmail.com</p>
+                <p>홈페이지 문의 또는 회사가 안내하는 카카오채널을 이용해 주세요.</p>
               </dd>
             </div>
-            <div>
-              <dt className="font-semibold text-white">카카오톡 채널</dt>
-              <dd>추후 안내 예정 (placeholder)</dd>
-            </div>
           </dl>
-          <div className="mt-6">
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link
+              href="/payment"
+              className="inline-flex items-center rounded-full bg-white px-4 py-2 text-sm font-medium text-zinc-900 transition hover:bg-zinc-100"
+            >
+              결제 페이지로 이동
+            </Link>
             <Link
               href="/"
               className="inline-flex items-center rounded-full border border-zinc-400 px-4 py-2 text-sm font-medium text-white transition hover:bg-white hover:text-zinc-900"
             >
-              홈으로 돌아가기
+              홈으로 이동
             </Link>
           </div>
         </section>

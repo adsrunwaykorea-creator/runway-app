@@ -7,6 +7,9 @@ export default function PaymentPageClient() {
   const qs = searchParams.toString();
   const src = qs ? `/html/payment.html?${qs}` : '/html/payment.html';
 
+  // payment.html is shown inside an iframe: in-document links must use target="_top"
+  // or they navigate only the iframe while the URL bar still shows /payment.
+
   return (
     <main
       className="bg-gradient-to-b from-zinc-50 to-slate-100"

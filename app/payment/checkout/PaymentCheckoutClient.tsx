@@ -25,6 +25,21 @@ declare global {
 
 const TOSS_SCRIPT_URL = 'https://js.tosspayments.com/v1/payment';
 
+/** Checkout·주문 표기용: 리드(구 DB) 계열 서비스명을 canonical 로 정규화 (service_key는 변경하지 않음) */
+export function normalizeServiceDisplayName(service: string): string {
+  const s = service.trim();
+  const asLead = new Set([
+    '리드 수집형 광고 운영',
+    '리드 수집형 광고',
+    '리드 수집 광고',
+    'DB 마케팅',
+    '온라인 DB 마케팅',
+    '리드 광고 운영',
+  ]);
+  if (asLead.has(s)) return '리드 광고 운영';
+  return s;
+}
+
 function loadTossScript() {
   return new Promise<void>((resolve, reject) => {
     if (window.TossPayments) {
@@ -62,6 +77,8 @@ export default function PaymentCheckoutClient() {
   const [customerPhone, setCustomerPhone] = useState('');
   const [businessName, setBusinessName] = useState('');
   const [receiptChannel, setReceiptChannel] = useState<ReceiptChannel>('kakao');
+  const [agreeProduct, setAgreeProduct] = useState(false);
+  const [agreeRefundPrivacy, setAgreeRefundPrivacy] = useState(false);
   const [paymentContext, setPaymentContext] = useState<{
     service: string;
     serviceKey: string;
@@ -137,6 +154,10 @@ export default function PaymentCheckoutClient() {
       setMessage('전화번호를 입력해주세요.');
       return;
     }
+    if (!agreeProduct || !agreeRefundPrivacy) {
+      setMessage('필수 항목에 동의해 주신 뒤 결제를 진행해주세요.');
+      return;
+    }
 
     setLoading(true);
     try {
@@ -149,8 +170,10 @@ export default function PaymentCheckoutClient() {
 
       const orderId = `rw_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
       const trimmedBusiness = businessName.trim();
+      const orderServiceLabel =
+        paymentContext.serviceKey === 'sns' ? 'SNS 마케팅' : '리드 광고 운영';
       const pendingOrder = {
-        service: paymentContext.service,
+        service: orderServiceLabel,
         service_key: paymentContext.serviceKey,
         period: paymentContext.period,
         amount: paymentContext.price,
@@ -166,7 +189,7 @@ export default function PaymentCheckoutClient() {
       await tossPayments.requestPayment('카드', {
         amount: paymentContext.price,
         orderId,
-        orderName: `${paymentContext.service} / ${paymentContext.period}`,
+        orderName: `${orderServiceLabel} / ${paymentContext.period}`,
         successUrl: `${window.location.origin}/payment/success`,
         failUrl: `${window.location.origin}/payment/fail`,
       });
@@ -199,36 +222,54 @@ export default function PaymentCheckoutClient() {
     );
   }
 
+  const agreementsOk = agreeProduct && agreeRefundPrivacy;
+  const payDisabled = !checkoutReady || loading || !agreementsOk;
+  const checkoutServiceLine = paymentContext
+    ? paymentContext.serviceKey === 'sns'
+      ? 'SNS 마케팅'
+      : normalizeServiceDisplayName(paymentContext.service)
+    : '';
+
   return (
-    <main className="min-h-screen bg-gradient-to-b from-zinc-50 to-slate-100 p-6">
+    <main className="min-h-screen bg-gradient-to-b from-zinc-50 to-slate-100 p-6 pb-12">
       <section className="mx-auto w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
-        {/* DEV NOTE: 실제 운영 전 테스트 중인 결제 흐름 */}
         <h1 className="mb-2 text-xl font-bold text-slate-900">결제 진행</h1>
-        <p className="mb-4 text-sm text-zinc-600">
-          현재 테스트 결제 모드입니다. 결제 완료는 테스트 결제 완료로 처리되며, 확인서는 카카오 또는 문자 기준으로 기록됩니다.
+        <p className="mb-4 text-sm leading-relaxed text-zinc-600">
+          선택한 서비스와 결제 정보를 확인한 뒤 결제를 진행해주세요.
         </p>
 
         {paymentContext ? (
-          <div className="mb-4 rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-700">
-            <p>
-              <span className="font-semibold text-zinc-900">신청 서비스</span>: {paymentContext.service}
-            </p>
-            <p>
-              <span className="font-semibold text-zinc-900">기간</span>: {periodLabel}
-            </p>
-            <p>
-              <span className="font-semibold text-zinc-900">금액</span>: {formatPrice(paymentContext.price)}
-            </p>
-            <p className="mt-2 text-xs leading-6 text-zinc-600">
-              카드 · 네이버페이 · 카카오페이 결제 가능
-              <br />
-              결제 완료 후 확인서는 문자 또는 카카오로 순차 발송됩니다.
-              <br />
-              <Link href="/refund-policy" className="font-semibold text-zinc-800 underline underline-offset-2">
-                청약철회·환불정책 확인
-              </Link>
-            </p>
-          </div>
+          <>
+            <div className="mb-3 rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-700">
+              <p>
+                <span className="font-semibold text-zinc-900">신청 서비스</span>: {checkoutServiceLine}
+              </p>
+              <p>
+                <span className="font-semibold text-zinc-900">기간</span>: {periodLabel}
+              </p>
+              <p>
+                <span className="font-semibold text-zinc-900">금액</span>: {formatPrice(paymentContext.price)}
+              </p>
+              <p className="mt-2 text-xs leading-6 text-zinc-600">
+                신용카드 및 간편결제는 결제창에서 확인·선택할 수 있습니다.
+                <br />
+                결제 완료 후 확인서는 선택하신 채널(카카오 또는 문자) 기준으로 순차 발송됩니다.
+                <br />
+                <Link href="/refund-policy" className="font-semibold text-zinc-800 underline underline-offset-2">
+                  청약철회·환불정책 확인
+                </Link>
+              </p>
+            </div>
+            <div className="mb-4 space-y-1.5 rounded-lg border border-zinc-100 bg-white px-3 py-2.5 text-xs leading-relaxed text-zinc-600">
+              <p>
+                본 상품은 광고 운영형 서비스이며, 제공 기간은 선택한 이용 기간 기준으로 적용됩니다.
+              </p>
+              <p>
+                서비스 제공 전에는 전액 환불이 가능하며, 제공이 시작된 이후에는 진행된 업무를 제외한
+                잔여 범위에 한해 환불이 가능합니다. 자세한 기준은 청약철회·환불정책을 참고해주세요.
+              </p>
+            </div>
+          </>
         ) : null}
 
         <div className="mb-3 space-y-3">
@@ -302,17 +343,86 @@ export default function PaymentCheckoutClient() {
           </fieldset>
         </div>
 
+        <div className="mb-4 space-y-2.5 rounded-lg border border-zinc-200 bg-zinc-50/80 p-3">
+          <label className="flex cursor-pointer items-start gap-2 text-xs leading-relaxed text-zinc-800">
+            <input
+              type="checkbox"
+              checked={agreeProduct}
+              onChange={(e) => setAgreeProduct(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-zinc-400 text-zinc-900 focus:ring-zinc-500"
+            />
+            <span>
+              <span className="font-semibold text-zinc-900">[필수]</span> 상품 정보 및 결제 내용을 확인했습니다.
+            </span>
+          </label>
+          <label className="flex cursor-pointer items-start gap-2 text-xs leading-relaxed text-zinc-800">
+            <input
+              type="checkbox"
+              checked={agreeRefundPrivacy}
+              onChange={(e) => setAgreeRefundPrivacy(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-zinc-400 text-zinc-900 focus:ring-zinc-500"
+            />
+            <span>
+              <span className="font-semibold text-zinc-900">[필수]</span> 환불정책 및 개인정보 수집·이용에
+              동의합니다.{' '}
+              <Link href="/refund-policy" className="font-medium text-zinc-900 underline underline-offset-2">
+                환불정책
+              </Link>
+              {' · '}
+              <Link href="/#contact" className="font-medium text-zinc-900 underline underline-offset-2">
+                개인정보 안내
+              </Link>
+            </span>
+          </label>
+        </div>
+
         <p className="mb-4 text-sm text-zinc-600">{message}</p>
         <button
           type="button"
           onClick={() => void handleStartPayment()}
-          disabled={!checkoutReady || loading}
+          disabled={payDisabled}
           className="h-11 w-full rounded-[10px] bg-slate-900 text-sm font-semibold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? '결제창 여는 중...' : '결제하기'}
         </button>
-        <p className="mt-3 text-center text-xs text-zinc-500">카드 · 네이버페이 · 카카오페이 결제 가능</p>
+        <p className="mt-3 text-center text-xs text-zinc-500">
+          결제수단은 토스 결제창에서 선택할 수 있습니다.
+        </p>
       </section>
+
+      <footer className="mx-auto mt-8 w-full max-w-md border-t border-zinc-200/80 pt-5 text-center text-[11px] leading-relaxed text-zinc-500">
+        <div className="mb-3 flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+          <Link href="/refund-policy" className="text-zinc-600 underline-offset-2 hover:text-zinc-900 hover:underline">
+            청약철회·환불정책
+          </Link>
+          <span className="text-zinc-300" aria-hidden>
+            |
+          </span>
+          <Link href="/#contact" className="text-zinc-600 underline-offset-2 hover:text-zinc-900 hover:underline">
+            개인정보처리방침
+          </Link>
+          <span className="text-zinc-300" aria-hidden>
+            |
+          </span>
+          <Link href="/refund-policy" className="text-zinc-600 underline-offset-2 hover:text-zinc-900 hover:underline">
+            이용약관·거래조건
+          </Link>
+        </div>
+        <p className="text-zinc-500">
+          <span className="font-medium text-zinc-600">런웨이</span> 사업자등록번호 326-02-03126 · 대표 박제혁
+          <br />
+          서울특별시 영등포구 국회대로38길 8, 403호(당산동3가, 문화빌딩)
+          <br />
+          고객문의{' '}
+          <a
+            href="mailto:ads.runwaykorea@gmail.com"
+            className="text-zinc-700 underline-offset-2 hover:text-zinc-900 hover:underline"
+          >
+            ads.runwaykorea@gmail.com
+          </a>{' '}
+          (접수 후 순차 회신)
+        </p>
+      </footer>
     </main>
   );
 }
