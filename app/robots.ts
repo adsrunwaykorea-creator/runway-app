@@ -6,6 +6,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
     },
-    sitemap: "https://runway-app-lyart.vercel.app/sitemap.xml",
+    sitemap: "https://runwayads.kr/sitemap.xml",
   };
 }

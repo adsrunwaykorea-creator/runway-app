@@ -12,13 +12,17 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteUrl = "https://runway-app-lyart.vercel.app";
+const siteUrl = "https://runwayads.kr";
 
 const title = "런웨이 | 광고비 수수료 0원 소상공인 광고대행";
 const description =
   "런웨이는 당근·네이버·SNS 광고를 상권과 업종에 맞게 운영하는 소상공인 광고대행사입니다.";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
+  alternates: {
+    canonical: "/",
+  },
   title,
   description,
   keywords: [

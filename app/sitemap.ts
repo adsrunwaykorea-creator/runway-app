@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const baseUrl = "https://runway-app-lyart.vercel.app";
+const baseUrl = "https://runwayads.kr";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
