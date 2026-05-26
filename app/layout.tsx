@@ -16,9 +16,7 @@ const siteUrl = "https://runway-app-lyart.vercel.app";
 
 const title = "런웨이 | 광고비 수수료 0원 소상공인 광고대행";
 const description =
-  "런웨이는 당근, 네이버, 인스타그램, 구글 광고를 상권과 업종에 맞게 운영하는 광고대행사입니다. 광고비는 고객이 직접 결제하고, 기획·세팅·운영·리포트만 투명하게 대행합니다.";
-const openGraphDescription =
-  "런웨이는 당근, 네이버, 인스타그램, 구글 광고를 상권과 업종에 맞게 운영하는 광고대행사입니다.";
+  "런웨이는 당근·네이버·SNS 광고를 상권과 업종에 맞게 운영하는 소상공인 광고대행사입니다.";
 
 export const metadata: Metadata = {
   title,
@@ -41,7 +39,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title,
-    description: openGraphDescription,
+    description,
     url: siteUrl,
     siteName: "런웨이",
     locale: "ko_KR",
@@ -50,7 +48,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title,
-    description: openGraphDescription,
+    description,
   },
   verification: {
     google: "dhUloy-bMYDzihv0RMVhKBv0hq05M6WkcoOfJtX4i_A",
