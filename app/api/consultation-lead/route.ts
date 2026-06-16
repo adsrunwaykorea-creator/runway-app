@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
-import {
-  ensureConsultationLeadsTable,
-  isMissingTableError,
-} from "@/lib/db/consultation-leads-setup";
+import { isMissingTableError } from "@/lib/consultation-leads-errors";
 import { getSupabaseLeadClient } from "@/lib/supabase/server";
-
 type Body = {
   source?: unknown;
   sessionKey?: unknown;
@@ -177,18 +173,9 @@ export async function POST(request: Request) {
       business_type: row.business_type,
     });
 
-    let { error } = await supabase.from("consultation_leads").insert(row);
+    const { error } = await supabase.from("consultation_leads").insert(row);
 
-    if (error && isMissingTableError(error.code)) {
-      console.warn("[consultation-lead] consultation_leads missing, attempting setup");
-      const ready = await ensureConsultationLeadsTable();
-      if (ready) {
-        ({ error } = await supabase.from("consultation_leads").insert(row));
-      }
-    }
-
-    if (error) {
-      console.error("[consultation-lead] insert consultation_leads failed", {
+    if (error) {      console.error("[consultation-lead] insert consultation_leads failed", {
         table: "consultation_leads",
         code: error.code,
         message: error.message,
