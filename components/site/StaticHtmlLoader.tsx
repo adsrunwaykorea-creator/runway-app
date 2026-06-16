@@ -78,17 +78,28 @@ export function StaticHtmlLoader({ src, normalizeHtml }: Props) {
           }
         });
 
-        scripts.forEach((old) => {
-          const s = document.createElement("script");
-          s.setAttribute("data-runway-injected", "1");
-          if (old.src) {
-            s.src = old.src;
-            s.async = false;
-          } else {
+        const appendScript = (old: HTMLScriptElement): Promise<void> =>
+          new Promise((resolve, reject) => {
+            const s = document.createElement("script");
+            s.setAttribute("data-runway-injected", "1");
+
+            if (old.src) {
+              s.src = old.src;
+              s.onload = () => resolve();
+              s.onerror = () => reject(new Error(`Failed to load script: ${old.src}`));
+              document.body.appendChild(s);
+              return;
+            }
+
             s.textContent = old.textContent;
-          }
-          document.body.appendChild(s);
-        });
+            document.body.appendChild(s);
+            resolve();
+          });
+
+        for (const old of scripts) {
+          if (cancelled) return;
+          await appendScript(old);
+        }
       } catch (e) {
         if (!cancelled) {
           setError(e instanceof Error ? e.message : "Failed to render page");

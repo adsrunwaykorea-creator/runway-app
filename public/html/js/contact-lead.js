@@ -55,6 +55,8 @@
     const form = document.getElementById("contactDetailForm");
     const successEl = document.getElementById("detailFormSuccess");
     if (!form) return;
+    if (form.dataset.runwayLeadBound === "1") return;
+    form.dataset.runwayLeadBound = "1";
 
     let isSubmitting = false;
     const detailSubmitButton = document.getElementById("detailSubmitButton");
@@ -204,6 +206,8 @@
     const closeBtn = document.querySelector(".close");
 
     if (!modal || !contactForm || !successMessage) return;
+    if (contactForm.dataset.runwayLeadBound === "1") return;
+    contactForm.dataset.runwayLeadBound = "1";
 
     function resetForm() {
       contactForm.style.display = "block";
@@ -315,4 +319,20 @@
     initContactDetailForm,
     initContactModalForm,
   };
+
+  function bootstrapContactForms() {
+    if (window.__runwayContactLeadBootstrapped) return;
+
+    const hasDetail = document.getElementById("contactDetailForm");
+    const hasModal = document.getElementById("contactForm");
+    if (!hasDetail && !hasModal) return;
+
+    window.__runwayContactLeadBootstrapped = true;
+    initContactModalForm({ serviceType: "DB 수집 캠페인" });
+
+    const btnText = document.getElementById("detailSubmitButtonText")?.textContent?.trim();
+    initContactDetailForm({ submitButtonText: btnText || "상담신청" });
+  }
+
+  bootstrapContactForms();
 })();
