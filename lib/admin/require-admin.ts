@@ -1,11 +1,21 @@
 import { NextResponse } from 'next/server';
+import {
+  hasAdminAccess,
+  isAdminDevBypassServer,
+  parseAdminEmails,
+} from '@/lib/admin/access';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 
 type AdminAuthResult =
   | { userId: string; error?: undefined }
   | { userId?: undefined; error: NextResponse };
 
-export async function requireAdminUser(): Promise<AdminAuthResult> {
+export async function requireAdminUser(request?: Request): Promise<AdminAuthResult> {
+  if (isAdminDevBypassServer(request)) {
+    console.log('[requireAdminUser] local development bypass enabled');
+    return { userId: 'dev-local-bypass' };
+  }
+
   const supabase = await getSupabaseServerClient();
   const {
     data: { user },
@@ -13,6 +23,9 @@ export async function requireAdminUser(): Promise<AdminAuthResult> {
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
+    console.log('[requireAdminUser] redirect reason: not logged in', {
+      userError: userError?.message ?? null,
+    });
     return {
       error: NextResponse.json({ success: false, message: '로그인이 필요합니다.' }, { status: 401 }),
     };
@@ -31,8 +44,17 @@ export async function requireAdminUser(): Promise<AdminAuthResult> {
     };
   }
 
-  const role = (profile?.role ?? '').toString().toLowerCase();
-  if (role !== 'admin' && role !== 'manager') {
+  const role = profile?.role ?? null;
+  const email = user.email ?? null;
+  const allowed = hasAdminAccess(role, email);
+
+  if (!allowed) {
+    console.log('[requireAdminUser] redirect reason: not admin', {
+      userId: user.id,
+      email,
+      role,
+      adminEmailsConfigured: parseAdminEmails().length > 0,
+    });
     return {
       error: NextResponse.json({ success: false, message: '관리자 권한이 없습니다.' }, { status: 403 }),
     };

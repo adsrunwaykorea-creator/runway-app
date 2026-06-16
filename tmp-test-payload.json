@@ -1,0 +1,29 @@
+{
+  "source": "contact_us",
+  "sessionKey": "test-debug-001",
+  "businessType": "교육/학원",
+  "region": "교육/학원",
+  "monthlyBudget": "300~500만원",
+  "adBudget": "300~500만원",
+  "goal": "테스트 문의",
+  "message": "테스트 문의",
+  "contact": "테스트 / 010-1234-5678",
+  "name": "테스트",
+  "phone": "010-1234-5678",
+  "serviceType": "sns",
+  "adChannel": "SNS 마케팅",
+  "privacyConsent": true,
+  "privacyAgreed": true,
+  "createdAt": "2026-06-15T00:00:00.000Z",
+  "pageSource": "runwayads.kr",
+  "referrer": "",
+  "utmSource": "",
+  "utmMedium": "",
+  "utmCampaign": "",
+  "payload": {
+    "source": "runwayads.kr",
+    "privacyConsent": true,
+    "privacyAgreed": true,
+    "services": "sns"
+  }
+}

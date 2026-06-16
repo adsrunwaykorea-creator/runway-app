@@ -17,7 +17,7 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
-  const auth = await requireAdminUser();
+  const auth = await requireAdminUser(request);
   if (auth.error) return auth.error;
 
   const { id } = await context.params;

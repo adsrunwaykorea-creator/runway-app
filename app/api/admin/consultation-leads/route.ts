@@ -3,8 +3,8 @@ import { requireAdminUser } from '@/lib/admin/require-admin';
 import { CONSULTATION_LEAD_SELECT } from '@/lib/admin/consultation-leads-query';
 import { getSupabaseAdminClient } from '@/lib/supabase/server';
 
-export async function GET() {
-  const auth = await requireAdminUser();
+export async function GET(request: Request) {
+  const auth = await requireAdminUser(request);
   if (auth.error) return auth.error;
 
   try {

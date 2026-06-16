@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server';
+import { PAYMENT_REQUEST_SELECT } from '@/lib/admin/payment-requests-query';
 import { requireAdminUser } from '@/lib/admin/require-admin';
 import { getSupabaseAdminClient } from '@/lib/supabase/server';
 
-const PAYMENT_REQUEST_SELECT =
-  'id, created_at, product_id, product_name, amount, vat_included, service_period_days, customer_name, customer_phone, customer_email, business_name, business_type, message, payment_method, status, privacy_agreed, terms_agreed';
-
-export async function GET() {
-  const auth = await requireAdminUser();
+export async function GET(request: Request) {
+  const auth = await requireAdminUser(request);
   if (auth.error) return auth.error;
 
   try {

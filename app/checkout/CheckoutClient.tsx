@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { KAKAO_PAY_CHECKOUT_PRODUCT } from '@/lib/checkout/kakao-pay-product';
 import { RUNWAY_BUSINESS_INFO } from '@/lib/site/business-info';
+import { CHECKOUT_COMPLETE_STORAGE_KEY, type CheckoutCompleteSummary } from '@/types/payment-request';
 
 const INDUSTRY_OPTIONS = [
   '교육/학원',
@@ -86,6 +87,13 @@ export default function CheckoutClient() {
         throw new Error(result?.message ?? '결제 신청에 실패했습니다.');
       }
 
+      const summary: CheckoutCompleteSummary = {
+        name: result.summary?.name ?? customerName.trim(),
+        productName: result.summary?.productName ?? product.name,
+        amount: result.summary?.amount ?? product.amount,
+        createdAt: result.summary?.createdAt ?? new Date().toISOString(),
+      };
+      sessionStorage.setItem(CHECKOUT_COMPLETE_STORAGE_KEY, JSON.stringify(summary));
       router.push('/checkout/complete');
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : '결제 신청에 실패했습니다.');

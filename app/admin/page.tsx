@@ -1,8 +1,9 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { hasAdminAccess, isAdminDevBypassClient } from '@/lib/admin/access';
 import { CONSULTATION_LEAD_SELECT } from '@/lib/admin/consultation-leads-query';
 import { getOrderStatus, type OrderStatus } from '@/lib/status';
 import { formatDate } from '@/lib/date';
@@ -110,9 +111,54 @@ async function fetchPaymentRequestsFromApi(): Promise<{
   }
 }
 
+type AdminAccessState = 'loading' | 'ready' | 'login_required' | 'forbidden';
+
+function AdminAccessDenied() {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-zinc-50 to-slate-100 p-4">
+      <section className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 text-center shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+        <h1 className="text-2xl font-extrabold text-slate-900">관리자 권한이 없습니다.</h1>
+        <p className="mt-3 text-sm leading-6 text-zinc-600">
+          관리자 계정으로 로그인했는지 확인해 주세요.
+        </p>
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+          <Link
+            href="/login?next=/admin"
+            className="inline-flex h-11 items-center justify-center rounded-[10px] bg-zinc-900 px-5 text-sm font-semibold text-white"
+          >
+            로그인
+          </Link>
+          <Link
+            href="/"
+            className="inline-flex h-11 items-center justify-center rounded-[10px] border border-zinc-300 bg-white px-5 text-sm font-semibold text-slate-800"
+          >
+            홈으로
+          </Link>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function AdminLoginRequired() {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-zinc-50 to-slate-100 p-4">
+      <section className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 text-center shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+        <h1 className="text-2xl font-extrabold text-slate-900">로그인이 필요합니다.</h1>
+        <p className="mt-3 text-sm leading-6 text-zinc-600">관리자 페이지는 로그인 후 이용할 수 있습니다.</p>
+        <Link
+          href="/login?next=/admin"
+          className="mt-6 inline-flex h-11 items-center justify-center rounded-[10px] bg-zinc-900 px-5 text-sm font-semibold text-white"
+        >
+          로그인하기
+        </Link>
+      </section>
+    </main>
+  );
+}
+
 export default function AdminPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const [accessState, setAccessState] = useState<AdminAccessState>('loading');
   const [orders, setOrders] = useState<AdminOrderView[]>([]);
   const [leads, setLeads] = useState<ConsultationLeadRow[]>([]);
   const [leadsLoading, setLeadsLoading] = useState(true);
@@ -120,34 +166,81 @@ export default function AdminPage() {
   const [paymentRequests, setPaymentRequests] = useState<PaymentRequestRow[]>([]);
   const [paymentRequestsLoading, setPaymentRequestsLoading] = useState(true);
   const [paymentRequestsLoadError, setPaymentRequestsLoadError] = useState<string | null>(null);
+  const [ordersLoading, setOrdersLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     const supabase = getSupabaseBrowserClient();
 
     const loadData = async () => {
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError || !userData?.user) {
-        if (!cancelled) router.replace('/login');
-        return;
-      }
+      if (isAdminDevBypassClient()) {
+        console.log('[ADMIN] local development bypass enabled — admin access granted');
+        if (!cancelled) setAccessState('ready');
+      } else {
+        const { data: userData, error: userError } = await supabase.auth.getUser();
+        if (userError || !userData?.user) {
+          console.log('[ADMIN] redirect reason: not logged in', {
+            userError: userError?.message ?? null,
+          });
+          if (!cancelled) {
+            setAccessState('login_required');
+            setOrdersLoading(false);
+            setLeadsLoading(false);
+            setPaymentRequestsLoading(false);
+          }
+          return;
+        }
 
-      const { data: roleRow, error: roleError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', userData.user.id)
-        .maybeSingle();
+        const { data: roleRow, error: roleError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', userData.user.id)
+          .maybeSingle();
 
-      if (roleError) {
-        console.error('[ADMIN_ROLE_LOAD_ERROR]', roleError);
-        if (!cancelled) router.replace('/');
-        return;
-      }
+        if (roleError) {
+          console.error('[ADMIN] redirect reason: profile load failed', roleError);
+          if (!cancelled) {
+            setAccessState('forbidden');
+            setOrdersLoading(false);
+            setLeadsLoading(false);
+            setPaymentRequestsLoading(false);
+          }
+          return;
+        }
 
-      const role = (roleRow?.role ?? '').toString().toLowerCase();
-      if (role !== 'admin' && role !== 'manager') {
-        if (!cancelled) router.replace('/');
-        return;
+        const role = roleRow?.role ?? null;
+        const email = userData.user.email ?? null;
+        let allowed = hasAdminAccess(role, email);
+
+        if (!allowed) {
+          try {
+            const response = await fetch('/api/admin/access-check', {
+              cache: 'no-store',
+              credentials: 'include',
+            });
+            const result = await response.json();
+            allowed = result?.allowed === true;
+          } catch (accessError) {
+            console.error('[ADMIN] access-check failed', accessError);
+          }
+        }
+
+        if (!allowed) {
+          console.log('[ADMIN] redirect reason: not admin', {
+            userId: userData.user.id,
+            email,
+            role,
+          });
+          if (!cancelled) {
+            setAccessState('forbidden');
+            setOrdersLoading(false);
+            setLeadsLoading(false);
+            setPaymentRequestsLoading(false);
+          }
+          return;
+        }
+
+        if (!cancelled) setAccessState('ready');
       }
 
       const { data: orderRows, error: orderError } = await supabase
@@ -225,7 +318,7 @@ export default function AdminPage() {
         setLeadsLoadError(leadError);
         setPaymentRequests(paymentApiResult.requests);
         setPaymentRequestsLoadError(paymentApiResult.error);
-        setLoading(false);
+        setOrdersLoading(false);
         setLeadsLoading(false);
         setPaymentRequestsLoading(false);
       }
@@ -235,7 +328,7 @@ export default function AdminPage() {
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, []);
 
   const formatPrice = (value: number) => `₩${value.toLocaleString('ko-KR')}`;
 
@@ -297,6 +390,22 @@ export default function AdminPage() {
     }
   };
 
+  if (accessState === 'loading') {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-zinc-50 to-slate-100 p-4">
+        <p className="text-sm text-zinc-500">관리자 페이지를 불러오는 중...</p>
+      </main>
+    );
+  }
+
+  if (accessState === 'login_required') {
+    return <AdminLoginRequired />;
+  }
+
+  if (accessState === 'forbidden') {
+    return <AdminAccessDenied />;
+  }
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-zinc-50 to-slate-100 p-4 sm:p-6">
       <section className="mx-auto w-full max-w-7xl rounded-2xl border border-zinc-200 bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)] sm:p-8">
@@ -320,7 +429,7 @@ export default function AdminPage() {
 
         <div className="mb-10">
           <h2 className="mb-4 text-lg font-bold text-slate-900">결제 내역</h2>
-          {loading ? (
+          {ordersLoading ? (
             <p className="text-sm text-zinc-500">결제 데이터를 불러오는 중...</p>
           ) : orders.length === 0 ? (
             <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-600">

@@ -8,13 +8,6 @@ function formatPrice(value: number) {
   return `₩${value.toLocaleString('ko-KR')}`;
 }
 
-const STATUS_LABEL: Record<string, string> = {
-  pending: '접수',
-  contacted: '안내완료',
-  paid: '결제완료',
-  cancelled: '취소',
-};
-
 type Props = {
   requests: PaymentRequestRow[];
   loading: boolean;
@@ -68,15 +61,15 @@ export function AdminPaymentRequestsTable({ requests, loading, loadError }: Prop
             <tr key={row.id} className="border-b border-zinc-100 align-top">
               <td className="px-3 py-3 whitespace-nowrap">{formatDate(row.created_at)}</td>
               <td className="px-3 py-3 font-medium text-slate-900">
-                {row.customer_name} / {row.customer_phone}
+                {row.name} / {row.phone}
               </td>
-              <td className="px-3 py-3">{row.customer_email}</td>
+              <td className="px-3 py-3">{row.email}</td>
               <td className="px-3 py-3">{row.product_name}</td>
               <td className="px-3 py-3 whitespace-nowrap">{formatPrice(row.amount)}</td>
-              <td className="px-3 py-3">{row.business_name ?? '-'}</td>
+              <td className="px-3 py-3">{row.company ?? '-'}</td>
               <td className="px-3 py-3">{row.business_type ?? '-'}</td>
               <td className="px-3 py-3 max-w-[200px] whitespace-pre-wrap break-words">{row.message ?? '-'}</td>
-              <td className="px-3 py-3">{STATUS_LABEL[row.status] ?? row.status}</td>
+              <td className="px-3 py-3">{row.status}</td>
             </tr>
           ))}
         </tbody>

@@ -43,17 +43,26 @@ export function buildConsultationLeadsCsv(leads: ConsultationLeadRow[]): string 
       .join(',');
   });
 
-  return `\uFEFF${header.map(csvCell).join(',')}\n${rows.join('\n')}`;
+  return `${header.map(csvCell).join(',')}\n${rows.join('\n')}`;
+}
+
+const UTF8_BOM = new Uint8Array([0xef, 0xbb, 0xbf]);
+
+function csvDownloadFilename(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `consultation-leads-${year}-${month}-${day}.csv`;
 }
 
 export function downloadConsultationLeadsCsv(leads: ConsultationLeadRow[]) {
   const csv = buildConsultationLeadsCsv(leads);
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const blob = new Blob([UTF8_BOM, csv], { type: 'text/csv;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
-  const stamp = new Date().toISOString().slice(0, 10);
   link.href = url;
-  link.download = `consultation-leads-${stamp}.csv`;
+  link.download = csvDownloadFilename();
   link.click();
   URL.revokeObjectURL(url);
 }
