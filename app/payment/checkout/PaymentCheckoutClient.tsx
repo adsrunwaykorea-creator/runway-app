@@ -413,7 +413,11 @@ export default function PaymentCheckoutClient() {
           <br />
           서울특별시 영등포구 국회대로38길 8, 403호(당산동3가, 문화빌딩)
           <br />
-          고객문의{' '}
+          전화{' '}
+          <a href="tel:01077539765" className="text-zinc-700 underline-offset-2 hover:text-zinc-900 hover:underline">
+            010-7753-9765
+          </a>{' '}
+          · 고객문의{' '}
           <a
             href="mailto:ads.runwaykorea@gmail.com"
             className="text-zinc-700 underline-offset-2 hover:text-zinc-900 hover:underline"
@@ -421,6 +425,8 @@ export default function PaymentCheckoutClient() {
             ads.runwaykorea@gmail.com
           </a>{' '}
           (접수 후 순차 회신)
+          <br />
+          통신판매업 신고번호: 제 2026-서울영등포-1088호
         </p>
       </footer>
     </main>

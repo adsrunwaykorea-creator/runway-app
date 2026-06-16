@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { RUNWAY_BUSINESS_INFO } from "@/lib/site/business-info";
 
 export const metadata: Metadata = {
   title: "청약철회·환불정책 | 런웨이",
@@ -243,12 +244,26 @@ export default function RefundPolicyPage() {
             </div>
             <div>
               <dt className="font-semibold text-white">사업자등록번호</dt>
-              <dd>326-02-03126</dd>
+              <dd>{RUNWAY_BUSINESS_INFO.businessRegistrationNumber}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-white">사업장 주소</dt>
+              <dd>{RUNWAY_BUSINESS_INFO.address}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-white">통신판매업 신고번호</dt>
+              <dd>{RUNWAY_BUSINESS_INFO.ecommerceRegistration}</dd>
             </div>
             <div>
               <dt className="font-semibold text-white">문의</dt>
               <dd className="space-y-1.5">
-                <p>이메일: ads.runwaykorea@gmail.com</p>
+                <p>전화: {RUNWAY_BUSINESS_INFO.phone}</p>
+                <p>
+                  이메일:{" "}
+                  <a href={`mailto:${RUNWAY_BUSINESS_INFO.email}`} className="underline">
+                    {RUNWAY_BUSINESS_INFO.email}
+                  </a>
+                </p>
                 <p>홈페이지 문의 또는 회사가 안내하는 카카오채널을 이용해 주세요.</p>
               </dd>
             </div>

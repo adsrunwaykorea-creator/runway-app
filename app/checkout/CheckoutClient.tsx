@@ -1,8 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import {
+  getCheckoutDisabledMessages,
+  getCheckoutValidationState,
+} from '@/lib/checkout/checkout-validation';
 import { KAKAO_PAY_CHECKOUT_PRODUCT } from '@/lib/checkout/kakao-pay-product';
 import { RUNWAY_BUSINESS_INFO } from '@/lib/site/business-info';
 import { CHECKOUT_COMPLETE_STORAGE_KEY, type CheckoutCompleteSummary } from '@/types/payment-request';
@@ -40,7 +44,6 @@ export default function CheckoutClient() {
 
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
-  const [customerEmail, setCustomerEmail] = useState('');
   const [businessName, setBusinessName] = useState('');
   const [businessType, setBusinessType] = useState('');
   const [message, setMessage] = useState('');
@@ -49,23 +52,52 @@ export default function CheckoutClient() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canSubmit = useMemo(
+  const validation = useMemo(
     () =>
-      Boolean(customerName.trim() && customerPhone.trim() && customerEmail.trim()) &&
-      privacyAgreed &&
-      termsAgreed &&
-      !loading,
-    [customerEmail, customerName, customerPhone, loading, privacyAgreed, termsAgreed],
+      getCheckoutValidationState({
+        customerName,
+        customerPhone,
+        businessName,
+        businessType,
+        message,
+        privacyAgreed,
+        termsAgreed,
+        loading,
+      }),
+    [
+      businessName,
+      businessType,
+      customerName,
+      customerPhone,
+      loading,
+      message,
+      privacyAgreed,
+      termsAgreed,
+    ],
   );
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!canSubmit) return;
+  const disabledMessages = useMemo(
+    () => (validation.canSubmit ? [] : getCheckoutDisabledMessages(validation)),
+    [validation],
+  );
+
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[checkout] validation', validation);
+    }
+  }, [validation]);
+
+  const submitPaymentRequest = async () => {
+    if (!validation.canSubmit) {
+      console.log('[checkout] submit blocked — validation failed', validation);
+      return;
+    }
 
     setLoading(true);
     setError(null);
 
     try {
+      console.log('[checkout] POST /api/checkout/kakao-pay-request');
       const response = await fetch('/api/checkout/kakao-pay-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -73,7 +105,6 @@ export default function CheckoutClient() {
           productId: product.id,
           customerName: customerName.trim(),
           customerPhone: customerPhone.trim(),
-          customerEmail: customerEmail.trim(),
           businessName: businessName.trim(),
           businessType: businessType.trim(),
           message: message.trim(),
@@ -89,17 +120,28 @@ export default function CheckoutClient() {
 
       const summary: CheckoutCompleteSummary = {
         name: result.summary?.name ?? customerName.trim(),
-        productName: result.summary?.productName ?? product.name,
+        productName: result.summary?.productName ?? product.displayName,
         amount: result.summary?.amount ?? product.amount,
         createdAt: result.summary?.createdAt ?? new Date().toISOString(),
       };
       sessionStorage.setItem(CHECKOUT_COMPLETE_STORAGE_KEY, JSON.stringify(summary));
       router.push('/checkout/complete');
     } catch (submitError) {
+      console.error('[checkout] submit error', submitError);
       setError(submitError instanceof Error ? submitError.message : '결제 신청에 실패했습니다.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    console.log('[checkout] form submit', { canSubmit: validation.canSubmit });
+    void submitPaymentRequest();
+  };
+
+  const handlePaymentClick = () => {
+    console.log('[checkout] payment button click', { canSubmit: validation.canSubmit });
   };
 
   return (
@@ -113,20 +155,20 @@ export default function CheckoutClient() {
           </p>
         </header>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+        <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6">
           <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
             <h2 className="text-lg font-bold text-slate-900">결제 상품 선택</h2>
-            <label className="mt-4 flex cursor-pointer gap-4 rounded-xl border-2 border-zinc-900 bg-zinc-50 p-4 sm:p-5">
-              <input type="radio" name="product" checked readOnly className="mt-1 h-4 w-4" />
+            <div className="mt-4 flex gap-4 rounded-xl border-2 border-zinc-900 bg-zinc-50 p-4 sm:p-5">
+              <input type="radio" name="product" checked readOnly className="mt-1 h-4 w-4" aria-hidden />
               <div className="min-w-0 flex-1">
-                <p className="text-base font-bold text-slate-900">{product.name}</p>
+                <p className="text-base font-bold text-slate-900">{product.displayName}</p>
                 <p className="mt-1 text-xl font-extrabold text-blue-700">{formatPrice(product.amount)}</p>
                 <p className="mt-2 text-sm leading-6 text-zinc-700">{product.description}</p>
                 <p className="mt-2 text-sm font-medium text-zinc-600">
                   제공 기간: {servicePeriodLabel(product.servicePeriodDays)}
                 </p>
               </div>
-            </label>
+            </div>
           </section>
 
           <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
@@ -135,46 +177,37 @@ export default function CheckoutClient() {
               <label className="block text-sm">
                 <span className="mb-1.5 block font-semibold text-zinc-800">이름 *</span>
                 <input
-                  required
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   className="h-11 w-full rounded-md border border-zinc-300 px-3 text-sm focus:border-zinc-500 focus:outline-none"
                   placeholder="홍길동"
+                  autoComplete="name"
                 />
               </label>
               <label className="block text-sm">
                 <span className="mb-1.5 block font-semibold text-zinc-800">연락처 *</span>
                 <input
-                  required
                   type="tel"
+                  inputMode="tel"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(formatPhoneInput(e.target.value))}
                   className="h-11 w-full rounded-md border border-zinc-300 px-3 text-sm focus:border-zinc-500 focus:outline-none"
                   placeholder="010-1234-5678"
-                />
-              </label>
-              <label className="block text-sm sm:col-span-2">
-                <span className="mb-1.5 block font-semibold text-zinc-800">이메일 *</span>
-                <input
-                  required
-                  type="email"
-                  value={customerEmail}
-                  onChange={(e) => setCustomerEmail(e.target.value)}
-                  className="h-11 w-full rounded-md border border-zinc-300 px-3 text-sm focus:border-zinc-500 focus:outline-none"
-                  placeholder="example@email.com"
+                  autoComplete="tel"
                 />
               </label>
               <label className="block text-sm">
-                <span className="mb-1.5 block font-semibold text-zinc-800">업체명</span>
+                <span className="mb-1.5 block font-semibold text-zinc-800">업체명 *</span>
                 <input
                   value={businessName}
                   onChange={(e) => setBusinessName(e.target.value)}
                   className="h-11 w-full rounded-md border border-zinc-300 px-3 text-sm focus:border-zinc-500 focus:outline-none"
                   placeholder="OO교육"
+                  autoComplete="organization"
                 />
               </label>
               <label className="block text-sm">
-                <span className="mb-1.5 block font-semibold text-zinc-800">업종</span>
+                <span className="mb-1.5 block font-semibold text-zinc-800">업종 *</span>
                 <select
                   value={businessType}
                   onChange={(e) => setBusinessType(e.target.value)}
@@ -206,7 +239,7 @@ export default function CheckoutClient() {
             <dl className="mt-4 space-y-3 text-sm">
               <div className="flex flex-col gap-1 border-b border-zinc-100 pb-3 sm:flex-row sm:justify-between">
                 <dt className="font-semibold text-zinc-600">선택 상품명</dt>
-                <dd className="font-medium text-slate-900">{product.name}</dd>
+                <dd className="font-medium text-slate-900">{product.displayName}</dd>
               </div>
               <div className="flex flex-col gap-1 border-b border-zinc-100 pb-3 sm:flex-row sm:justify-between">
                 <dt className="font-semibold text-zinc-600">결제 금액</dt>
@@ -242,32 +275,48 @@ export default function CheckoutClient() {
           <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
             <h2 className="text-lg font-bold text-slate-900">약관 동의</h2>
             <div className="mt-4 space-y-3">
-              <label className="flex items-start gap-3 text-sm text-zinc-800">
+              <label className="flex cursor-pointer items-start gap-3 text-sm text-zinc-800">
                 <input
                   type="checkbox"
                   checked={privacyAgreed}
                   onChange={(e) => setPrivacyAgreed(e.target.checked)}
-                  className="mt-1 h-4 w-4"
+                  className="mt-1 h-4 w-4 shrink-0"
                 />
                 <span>개인정보 수집 및 이용에 동의합니다. (필수)</span>
               </label>
-              <label className="flex items-start gap-3 text-sm text-zinc-800">
+              <div className="flex items-start gap-3 text-sm text-zinc-800">
                 <input
+                  id="terms-agreed"
                   type="checkbox"
                   checked={termsAgreed}
                   onChange={(e) => setTermsAgreed(e.target.checked)}
-                  className="mt-1 h-4 w-4"
+                  className="mt-1 h-4 w-4 shrink-0"
                 />
-                <span>
+                <label htmlFor="terms-agreed" className="cursor-pointer">
                   서비스 이용조건 및{' '}
-                  <Link href="/refund-policy" className="font-semibold text-blue-700 underline">
+                  <Link
+                    href="/refund-policy"
+                    className="font-semibold text-blue-700 underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     환불규정
                   </Link>
                   에 동의합니다. (필수)
-                </span>
-              </label>
+                </label>
+              </div>
             </div>
           </section>
+
+          {!validation.canSubmit && disabledMessages.length > 0 ? (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+              <p className="font-semibold">결제하기 전에 확인해주세요.</p>
+              <ul className="mt-2 list-disc space-y-1 pl-5">
+                {disabledMessages.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
 
           {error ? (
             <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>
@@ -275,7 +324,8 @@ export default function CheckoutClient() {
 
           <button
             type="submit"
-            disabled={!canSubmit}
+            disabled={!validation.canSubmit}
+            onClick={handlePaymentClick}
             className="h-12 w-full rounded-[10px] bg-[#FEE500] text-base font-bold text-[#191919] transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? '신청 접수 중...' : '카카오페이로 결제하기'}
@@ -297,6 +347,12 @@ export default function CheckoutClient() {
             </li>
             <li>
               <span className="font-semibold">사업장 주소:</span> {RUNWAY_BUSINESS_INFO.address}
+            </li>
+            <li>
+              <span className="font-semibold">전화번호:</span>{' '}
+              <a href={`tel:${RUNWAY_BUSINESS_INFO.phone.replace(/-/g, '')}`} className="text-blue-700 underline">
+                {RUNWAY_BUSINESS_INFO.phone}
+              </a>
             </li>
             <li>
               <span className="font-semibold">이메일:</span>{' '}

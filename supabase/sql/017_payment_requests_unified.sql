@@ -7,7 +7,7 @@ create table public.payment_requests (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   phone text not null,
-  email text not null,
+  email text,
   company text,
   business_type text,
   message text,

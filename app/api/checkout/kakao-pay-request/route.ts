@@ -6,7 +6,6 @@ type Body = {
   productId?: unknown;
   customerName?: unknown;
   customerPhone?: unknown;
-  customerEmail?: unknown;
   businessName?: unknown;
   businessType?: unknown;
   message?: unknown;
@@ -44,16 +43,23 @@ export async function POST(request: Request) {
 
   const name = str(body.customerName);
   const phone = str(body.customerPhone);
-  const email = str(body.customerEmail);
-  const company = str(body.businessName) || null;
-  const businessType = str(body.businessType) || null;
-  const message = str(body.message) || null;
+  const company = str(body.businessName);
+  const businessType = str(body.businessType);
+  const messageRaw = str(body.message);
+  const message = messageRaw.length > 0 ? messageRaw : null;
   const privacyAgreed = body.privacyAgreed === true;
   const termsAgreed = body.termsAgreed === true;
 
-  if (!name || !phone || !email) {
+  if (!name || !phone) {
     return NextResponse.json(
-      { success: false, message: '이름, 연락처, 이메일은 필수 항목입니다.' },
+      { success: false, message: '이름과 연락처는 필수 항목입니다.' },
+      { status: 400 },
+    );
+  }
+
+  if (!company || !businessType) {
+    return NextResponse.json(
+      { success: false, message: '업체명과 업종은 필수 항목입니다.' },
       { status: 400 },
     );
   }
@@ -78,7 +84,7 @@ export async function POST(request: Request) {
   const row = {
     name,
     phone,
-    email,
+    email: null,
     company,
     business_type: businessType,
     message,
@@ -121,7 +127,7 @@ export async function POST(request: Request) {
       message: '결제 요청이 접수되었습니다. 담당자가 확인 후 결제 안내를 드리겠습니다.',
       summary: {
         name: data?.name ?? name,
-        productName: data?.product_name ?? KAKAO_PAY_CHECKOUT_PRODUCT.name,
+        productName: KAKAO_PAY_CHECKOUT_PRODUCT.displayName,
         amount: data?.amount ?? KAKAO_PAY_CHECKOUT_PRODUCT.amount,
         createdAt: data?.created_at ?? now,
       },

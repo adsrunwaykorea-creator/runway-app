@@ -2,7 +2,7 @@ export type PaymentRequestRow = {
   id: string;
   name: string;
   phone: string;
-  email: string;
+  email: string | null;
   company: string | null;
   business_type: string | null;
   message: string | null;

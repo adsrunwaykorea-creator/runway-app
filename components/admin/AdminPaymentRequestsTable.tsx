@@ -42,12 +42,11 @@ export function AdminPaymentRequestsTable({ requests, loading, loadError }: Prop
 
   return (
     <div className="-mx-2 overflow-x-auto px-2 sm:mx-0 sm:px-0">
-      <table className="min-w-[960px] w-full border-collapse text-left text-sm">
+      <table className="min-w-[880px] w-full border-collapse text-left text-sm">
         <thead>
           <tr className="border-b border-zinc-200 bg-zinc-50 text-xs font-semibold uppercase tracking-wide text-zinc-600">
             <th className="px-3 py-3">신청일</th>
             <th className="px-3 py-3">이름 / 연락처</th>
-            <th className="px-3 py-3">이메일</th>
             <th className="px-3 py-3">상품명</th>
             <th className="px-3 py-3">금액</th>
             <th className="px-3 py-3">업체명</th>
@@ -63,7 +62,6 @@ export function AdminPaymentRequestsTable({ requests, loading, loadError }: Prop
               <td className="px-3 py-3 font-medium text-slate-900">
                 {row.name} / {row.phone}
               </td>
-              <td className="px-3 py-3">{row.email}</td>
               <td className="px-3 py-3">{row.product_name}</td>
               <td className="px-3 py-3 whitespace-nowrap">{formatPrice(row.amount)}</td>
               <td className="px-3 py-3">{row.company ?? '-'}</td>
