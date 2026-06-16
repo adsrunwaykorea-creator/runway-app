@@ -8,7 +8,9 @@ import { getOrderStatus, type OrderStatus } from '@/lib/status';
 import { formatDate } from '@/lib/date';
 import type { OrderRow } from '@/types/order';
 import { AdminLeadsTable } from '@/components/admin/AdminLeadsTable';
+import { AdminPaymentRequestsTable } from '@/components/admin/AdminPaymentRequestsTable';
 import type { ConsultationLeadRow, ConsultationLeadStatus } from '@/types/consultation-lead';
+import type { PaymentRequestRow } from '@/types/payment-request';
 
 type AdminOrderItem = Omit<OrderRow, 'email' | 'service' | 'period'> & {
   email: string | null;
@@ -85,6 +87,29 @@ async function fetchLeadsFromApi(): Promise<{ leads: ConsultationLeadRow[]; erro
   }
 }
 
+async function fetchPaymentRequestsFromApi(): Promise<{
+  requests: PaymentRequestRow[];
+  error: string | null;
+}> {
+  try {
+    const response = await fetch('/api/admin/payment-requests', {
+      cache: 'no-store',
+      credentials: 'include',
+    });
+    const result = await response.json();
+    if (response.ok && result?.success) {
+      return { requests: (result.requests as PaymentRequestRow[]) ?? [], error: null };
+    }
+    return {
+      requests: [],
+      error: result?.message ?? `API 오류 (${response.status})`,
+    };
+  } catch (error) {
+    console.error('[ADMIN_PAYMENT_REQUESTS_API_ERROR]', error);
+    return { requests: [], error: 'API 요청 실패' };
+  }
+}
+
 export default function AdminPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -92,6 +117,9 @@ export default function AdminPage() {
   const [leads, setLeads] = useState<ConsultationLeadRow[]>([]);
   const [leadsLoading, setLeadsLoading] = useState(true);
   const [leadsLoadError, setLeadsLoadError] = useState<string | null>(null);
+  const [paymentRequests, setPaymentRequests] = useState<PaymentRequestRow[]>([]);
+  const [paymentRequestsLoading, setPaymentRequestsLoading] = useState(true);
+  const [paymentRequestsLoadError, setPaymentRequestsLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -189,12 +217,17 @@ export default function AdminPage() {
         }
       }
 
+      const paymentApiResult = await fetchPaymentRequestsFromApi();
+
       if (!cancelled) {
         setOrders(merged);
         setLeads(leadRows);
         setLeadsLoadError(leadError);
+        setPaymentRequests(paymentApiResult.requests);
+        setPaymentRequestsLoadError(paymentApiResult.error);
         setLoading(false);
         setLeadsLoading(false);
+        setPaymentRequestsLoading(false);
       }
     };
 
@@ -268,7 +301,7 @@ export default function AdminPage() {
     <main className="min-h-screen bg-gradient-to-b from-zinc-50 to-slate-100 p-4 sm:p-6">
       <section className="mx-auto w-full max-w-7xl rounded-2xl border border-zinc-200 bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)] sm:p-8">
         <h1 className="mb-2 text-2xl font-extrabold text-slate-900">관리자 페이지</h1>
-        <p className="mb-6 text-sm text-zinc-600">결제 내역과 상담신청 내역을 확인할 수 있습니다.</p>
+        <p className="mb-6 text-sm text-zinc-600">결제 내역, 결제 신청, 상담신청 내역을 확인할 수 있습니다.</p>
 
         <div className="mb-8 grid grid-cols-1 gap-3 md:grid-cols-3">
           <article className="rounded-lg border border-blue-200 bg-blue-50 p-4">
@@ -352,6 +385,15 @@ export default function AdminPage() {
               })}
             </div>
           )}
+        </div>
+
+        <div className="mb-10">
+          <h2 className="mb-4 text-lg font-bold text-slate-900">카카오페이 결제 신청</h2>
+          <AdminPaymentRequestsTable
+            requests={paymentRequests}
+            loading={paymentRequestsLoading}
+            loadError={paymentRequestsLoadError}
+          />
         </div>
 
         <div>
