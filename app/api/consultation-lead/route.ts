@@ -1,4 +1,8 @@
 import { NextResponse } from "next/server";
+import {
+  ensureConsultationLeadsTable,
+  isMissingTableError,
+} from "@/lib/db/consultation-leads-setup";
 import { getSupabaseLeadClient } from "@/lib/supabase/server";
 
 type Body = {
@@ -10,6 +14,7 @@ type Body = {
   adBudget?: unknown;
   goal?: unknown;
   message?: unknown;
+  adChannel?: unknown;
   contact?: unknown;
   name?: unknown;
   company?: unknown;
@@ -17,7 +22,13 @@ type Body = {
   phone?: unknown;
   serviceType?: unknown;
   privacyConsent?: unknown;
+  privacyAgreed?: unknown;
   createdAt?: unknown;
+  pageSource?: unknown;
+  referrer?: unknown;
+  utmSource?: unknown;
+  utmMedium?: unknown;
+  utmCampaign?: unknown;
   payload?: unknown;
 };
 
@@ -57,17 +68,19 @@ export async function POST(request: Request) {
   }
 
   const extra = payloadRecord(body);
-  const name = str(body.name) || str(body.companyName);
+  const name = str(body.name);
   const company = str(body.company) || str(body.companyName);
   const phone = str(body.phone);
   const serviceType = str(body.serviceType);
   const message = str(body.message) || str(extra?.message);
   const adBudget = str(body.adBudget) || str(body.monthlyBudget) || str(extra?.adBudget);
+  const privacyAgreed =
+    body.privacyAgreed === true ||
+    body.privacyConsent === true ||
+    extra?.privacyAgreed === true ||
+    extra?.privacyConsent === true;
 
-  const privacyConsent =
-    body.privacyConsent === true || extra?.privacyConsent === true;
-
-  if (source === "contact_us" && !privacyConsent) {
+  if (source === "contact_us" && !privacyAgreed) {
     console.error("[consultation-lead] privacy consent missing for contact_us");
     return NextResponse.json(
       { success: false, message: "개인정보 수집 및 이용에 동의해 주세요." },
@@ -76,22 +89,34 @@ export async function POST(request: Request) {
   }
 
   const sessionKey = str(body.sessionKey) || `${source}-${crypto.randomUUID()}`;
-  const businessType = str(body.businessType) || serviceType || "일반 상담";
-  const region = str(body.region) || businessType || "미입력";
+  const businessType = str(body.businessType) || "일반 상담";
+  const region = str(body.region) || "미입력";
   const monthlyBudget = adBudget || str(body.monthlyBudget) || "미입력";
-  const goal = str(body.goal) || message || "상담 문의";
+  const goal = message || str(body.goal) || "상담 문의";
   const contact = str(body.contact) || [name, phone].filter(Boolean).join(" / ");
   const createdAt = str(body.createdAt) || new Date().toISOString();
-  const pageSource = str(extra?.source) || "runwayads.kr";
+  const pageSource =
+    str(body.pageSource) || str(extra?.source) || str(extra?.pageSource) || "runwayads.kr";
+  const referrer = str(body.referrer) || str(extra?.referrer) || null;
+  const utmSource = str(body.utmSource) || str(extra?.utm_source) || str(extra?.utmSource) || null;
+  const utmMedium = str(body.utmMedium) || str(extra?.utm_medium) || str(extra?.utmMedium) || null;
+  const utmCampaign =
+    str(body.utmCampaign) || str(extra?.utm_campaign) || str(extra?.utmCampaign) || null;
+  const adChannel = str(body.adChannel) || serviceType || null;
 
-  if (!businessType || !region || !monthlyBudget || !goal || !contact) {
-    console.error("[consultation-lead] missing required fields", {
+  if (source === "contact_us" && (!name || !phone || !businessType)) {
+    console.error("[consultation-lead] missing required contact fields", {
+      name: !!name,
+      phone: !!phone,
       businessType: !!businessType,
-      region: !!region,
-      monthlyBudget: !!monthlyBudget,
-      goal: !!goal,
-      contact: !!contact,
     });
+    return NextResponse.json(
+      { success: false, message: "이름, 연락처, 업종은 필수 항목입니다." },
+      { status: 400 },
+    );
+  }
+
+  if (!contact) {
     return NextResponse.json(
       { success: false, message: "필수 항목을 모두 입력해 주세요." },
       { status: 400 },
@@ -101,13 +126,20 @@ export async function POST(request: Request) {
   const rawPayload = {
     ...(extra ?? {}),
     source: pageSource,
-    privacyConsent,
+    pageSource,
+    privacyConsent: privacyAgreed,
+    privacyAgreed,
     createdAt,
+    referrer,
+    utm_source: utmSource,
+    utm_medium: utmMedium,
+    utm_campaign: utmCampaign,
     name: name || null,
     companyName: company || null,
     phone: phone || null,
     businessType,
     adBudget: monthlyBudget,
+    adChannel,
     message: message || null,
     serviceType: serviceType || null,
   };
@@ -126,6 +158,16 @@ export async function POST(request: Request) {
       company: company || null,
       phone: phone || null,
       service_type: serviceType || null,
+      ad_channel: adChannel,
+      message: message || goal || null,
+      privacy_agreed: privacyAgreed,
+      page_source: pageSource,
+      referrer,
+      utm_source: utmSource,
+      utm_medium: utmMedium,
+      utm_campaign: utmCampaign,
+      status: "신규",
+      admin_memo: null,
       raw_payload: rawPayload,
     };
 
@@ -135,7 +177,15 @@ export async function POST(request: Request) {
       business_type: row.business_type,
     });
 
-    const { error } = await supabase.from("consultation_leads").insert(row);
+    let { error } = await supabase.from("consultation_leads").insert(row);
+
+    if (error && isMissingTableError(error.code)) {
+      console.warn("[consultation-lead] consultation_leads missing, attempting setup");
+      const ready = await ensureConsultationLeadsTable();
+      if (ready) {
+        ({ error } = await supabase.from("consultation_leads").insert(row));
+      }
+    }
 
     if (error) {
       console.error("[consultation-lead] insert consultation_leads failed", {
@@ -145,10 +195,10 @@ export async function POST(request: Request) {
         details: error.details,
         hint: error.hint,
       });
-      return NextResponse.json(
-        { success: false, message: "저장 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요." },
-        { status: 500 },
-      );
+      const message = isMissingTableError(error.code)
+        ? "상담 신청 DB가 아직 설정되지 않았습니다. 관리자에게 문의해 주세요."
+        : "저장 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+      return NextResponse.json({ success: false, message }, { status: 500 });
     }
   } catch (e) {
     const err = e instanceof Error ? e : new Error(String(e));
@@ -171,6 +221,6 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     success: true,
-    message: "상담 신청이 접수되었습니다. 확인 후 빠르게 연락드리겠습니다.",
+    message: "상담 신청이 완료되었습니다. 빠르게 연락드리겠습니다.",
   });
 }

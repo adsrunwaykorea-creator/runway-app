@@ -3,9 +3,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { CONSULTATION_LEAD_SELECT } from '@/lib/admin/consultation-leads-query';
 import { getOrderStatus, type OrderStatus } from '@/lib/status';
 import { formatDate } from '@/lib/date';
 import type { OrderRow } from '@/types/order';
+import { AdminLeadsTable } from '@/components/admin/AdminLeadsTable';
+import type { ConsultationLeadRow, ConsultationLeadStatus } from '@/types/consultation-lead';
 
 type AdminOrderItem = Omit<OrderRow, 'email' | 'service' | 'period'> & {
   email: string | null;
@@ -53,16 +56,48 @@ const getExpiryStatusMeta = (status: OrderStatus) => {
   };
 };
 
+function isInCurrentMonth(dateString: string): boolean {
+  const date = new Date(dateString);
+  const now = new Date();
+  return (
+    date.getFullYear() === now.getFullYear() &&
+    date.getMonth() === now.getMonth()
+  );
+}
+
+async function fetchLeadsFromApi(): Promise<{ leads: ConsultationLeadRow[]; error: string | null }> {
+  try {
+    const response = await fetch('/api/admin/consultation-leads', {
+      cache: 'no-store',
+      credentials: 'include',
+    });
+    const result = await response.json();
+    if (response.ok && result?.success) {
+      return { leads: (result.leads as ConsultationLeadRow[]) ?? [], error: null };
+    }
+    return {
+      leads: [],
+      error: result?.message ?? `API 오류 (${response.status})`,
+    };
+  } catch (error) {
+    console.error('[ADMIN_LEADS_API_ERROR]', error);
+    return { leads: [], error: 'API 요청 실패' };
+  }
+}
+
 export default function AdminPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState<AdminOrderView[]>([]);
+  const [leads, setLeads] = useState<ConsultationLeadRow[]>([]);
+  const [leadsLoading, setLeadsLoading] = useState(true);
+  const [leadsLoadError, setLeadsLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     const supabase = getSupabaseBrowserClient();
 
-    const loadOrders = async () => {
+    const loadData = async () => {
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError || !userData?.user) {
         if (!cancelled) router.replace('/login');
@@ -90,7 +125,7 @@ export default function AdminPage() {
       const { data: orderRows, error: orderError } = await supabase
         .from('orders')
         .select(
-          'id, user_id, email, guest_name, guest_phone, business_name, confirmation_channel, service, period, amount, price, created_at, expires_at'
+          'id, user_id, email, guest_name, guest_phone, business_name, confirmation_channel, service, period, amount, price, created_at, expires_at',
         )
         .order('created_at', { ascending: false });
 
@@ -131,13 +166,39 @@ export default function AdminPage() {
         };
       });
 
+      let leadRows: ConsultationLeadRow[] = [];
+      let leadError: string | null = null;
+
+      const apiResult = await fetchLeadsFromApi();
+      if (!apiResult.error) {
+        leadRows = apiResult.leads;
+      } else {
+        const { data: directLeads, error: directError } = await supabase
+          .from('consultation_leads')
+          .select(CONSULTATION_LEAD_SELECT)
+          .order('created_at', { ascending: false });
+
+        if (directError) {
+          console.error('[ADMIN_LEADS_DIRECT_ERROR]', directError);
+          leadError = apiResult.error;
+        } else {
+          leadRows = (directLeads as ConsultationLeadRow[]) ?? [];
+          if (leadRows.length === 0) {
+            leadError = apiResult.error;
+          }
+        }
+      }
+
       if (!cancelled) {
         setOrders(merged);
+        setLeads(leadRows);
+        setLeadsLoadError(leadError);
         setLoading(false);
+        setLeadsLoading(false);
       }
     };
 
-    void loadOrders();
+    void loadData();
     return () => {
       cancelled = true;
     };
@@ -145,32 +206,71 @@ export default function AdminPage() {
 
   const formatPrice = (value: number) => `₩${value.toLocaleString('ko-KR')}`;
 
-  const { thisMonthRevenue, thisMonthOrderCount } = useMemo(() => {
-    const now = new Date();
-    const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-
-    const thisMonthOrders = orders.filter((order) => {
-      const createdAt = new Date(order.created_at);
-      return createdAt >= thisMonthStart && createdAt < nextMonthStart;
-    });
+  const { thisMonthRevenue, thisMonthOrderCount, thisMonthLeadCount } = useMemo(() => {
+    const thisMonthOrders = orders.filter((order) => isInCurrentMonth(order.created_at));
+    const thisMonthLeads = leads.filter((lead) => isInCurrentMonth(lead.created_at));
 
     return {
       thisMonthRevenue: thisMonthOrders.reduce(
         (sum, order) => sum + (order.amount ?? order.price ?? 0),
-        0
+        0,
       ),
       thisMonthOrderCount: thisMonthOrders.length,
+      thisMonthLeadCount: thisMonthLeads.length,
     };
-  }, [orders]);
+  }, [orders, leads]);
+
+  const updateLead = async (
+    id: string,
+    patch: { status?: ConsultationLeadStatus; admin_memo?: string },
+  ): Promise<boolean> => {
+    const supabase = getSupabaseBrowserClient();
+    const updates: Record<string, string> = {
+      updated_at: new Date().toISOString(),
+    };
+    if (patch.status !== undefined) updates.status = patch.status;
+    if (patch.admin_memo !== undefined) updates.admin_memo = patch.admin_memo;
+
+    const { data, error } = await supabase
+      .from('consultation_leads')
+      .update(updates)
+      .eq('id', id)
+      .select(CONSULTATION_LEAD_SELECT)
+      .maybeSingle();
+
+    if (!error && data) {
+      setLeads((prev) => prev.map((lead) => (lead.id === id ? (data as ConsultationLeadRow) : lead)));
+      return true;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/consultation-leads/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(patch),
+      });
+      const result = await response.json();
+      if (!response.ok || !result?.success) {
+        console.error('[ADMIN_LEAD_UPDATE_ERROR]', result ?? error);
+        return false;
+      }
+
+      setLeads((prev) => prev.map((lead) => (lead.id === id ? (result.lead as ConsultationLeadRow) : lead)));
+      return true;
+    } catch (updateError) {
+      console.error('[ADMIN_LEAD_UPDATE_ERROR]', updateError ?? error);
+      return false;
+    }
+  };
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-zinc-50 to-slate-100 p-4 sm:p-6">
-      <section className="mx-auto w-full max-w-4xl rounded-2xl border border-zinc-200 bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)] sm:p-8">
+      <section className="mx-auto w-full max-w-7xl rounded-2xl border border-zinc-200 bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.08)] sm:p-8">
         <h1 className="mb-2 text-2xl font-extrabold text-slate-900">관리자 페이지</h1>
-        <p className="mb-6 text-sm text-zinc-600">최근 결제 내역을 최신순으로 확인할 수 있습니다.</p>
+        <p className="mb-6 text-sm text-zinc-600">결제 내역과 상담신청 내역을 확인할 수 있습니다.</p>
 
-        <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-2">
+        <div className="mb-8 grid grid-cols-1 gap-3 md:grid-cols-3">
           <article className="rounded-lg border border-blue-200 bg-blue-50 p-4">
             <p className="text-xs font-semibold text-blue-700">이번 달 매출</p>
             <p className="mt-1 text-2xl font-extrabold text-blue-900">{formatPrice(thisMonthRevenue)}</p>
@@ -179,73 +279,90 @@ export default function AdminPage() {
             <p className="text-xs font-semibold text-emerald-700">이번 달 주문 수</p>
             <p className="mt-1 text-2xl font-extrabold text-emerald-900">{thisMonthOrderCount}</p>
           </article>
+          <article className="rounded-lg border border-violet-200 bg-violet-50 p-4">
+            <p className="text-xs font-semibold text-violet-700">이번 달 상담신청 수</p>
+            <p className="mt-1 text-2xl font-extrabold text-violet-900">{thisMonthLeadCount}</p>
+          </article>
         </div>
 
-        {loading ? (
-          <p className="text-sm text-zinc-500">결제 데이터를 불러오는 중...</p>
-        ) : orders.length === 0 ? (
-          <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-600">
-            저장된 결제 내역이 없습니다.
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {orders.map((order) => {
-              const expiryStatus = getOrderStatus(order.expires_at);
-              const statusMeta = getExpiryStatusMeta(expiryStatus);
+        <div className="mb-10">
+          <h2 className="mb-4 text-lg font-bold text-slate-900">결제 내역</h2>
+          {loading ? (
+            <p className="text-sm text-zinc-500">결제 데이터를 불러오는 중...</p>
+          ) : orders.length === 0 ? (
+            <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-600">
+              저장된 결제 내역이 없습니다.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {orders.map((order) => {
+                const expiryStatus = getOrderStatus(order.expires_at);
+                const statusMeta = getExpiryStatusMeta(expiryStatus);
 
-              return (
-                <article
-                  key={order.id}
-                  className="w-full rounded-lg border border-zinc-200 bg-white p-3 text-sm text-slate-800 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
-                >
-                  <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
-                    <p className="font-semibold break-all text-slate-900">
-                      {order.email ?? order.guest_name ?? '비회원 주문'}
+                return (
+                  <article
+                    key={order.id}
+                    className="w-full rounded-lg border border-zinc-200 bg-white p-3 text-sm text-slate-800 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                  >
+                    <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
+                      <p className="font-semibold break-all text-slate-900">
+                        {order.email ?? order.guest_name ?? '비회원 주문'}
+                      </p>
+                      <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusMeta.className}`}>
+                        {statusMeta.label}
+                      </span>
+                    </div>
+
+                    <p className="mt-1">
+                      <span className="font-semibold">고객명</span>:{' '}
+                      {order.profile?.name ?? order.guest_name ?? '-'}
                     </p>
-                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusMeta.className}`}>
-                      {statusMeta.label}
-                    </span>
-                  </div>
+                    <p>
+                      <span className="font-semibold">전화번호</span>:{' '}
+                      {order.profile?.phone ?? order.guest_phone ?? '-'}
+                    </p>
+                    <p>
+                      <span className="font-semibold">주문 유형</span>:{' '}
+                      {order.user_id ? '회원 결제' : '비회원 결제'}
+                    </p>
+                    <p>
+                      <span className="font-semibold">이메일</span>: {order.profile?.email ?? order.email ?? '-'}
+                    </p>
+                    <p>
+                      <span className="font-semibold">서비스</span>: {order.service}
+                    </p>
+                    <p>
+                      <span className="font-semibold">기간</span>: {order.period}
+                    </p>
+                    <p>
+                      <span className="font-semibold">결제금액</span>:{' '}
+                      {formatPrice(order.amount ?? order.price ?? 0)}
+                    </p>
+                    <p>
+                      <span className="font-semibold">결제일</span>: {formatDate(order.created_at)}
+                    </p>
+                    <p>
+                      <span className="font-semibold">마감일</span>: {formatDate(order.expires_at)}
+                    </p>
+                    <p>
+                      <span className="font-semibold">상태</span>: {expiryStatus}
+                    </p>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
-                  <p className="mt-1">
-                    <span className="font-semibold">고객명</span>:{' '}
-                    {order.profile?.name ?? order.guest_name ?? '-'}
-                  </p>
-                  <p>
-                    <span className="font-semibold">전화번호</span>:{' '}
-                    {order.profile?.phone ?? order.guest_phone ?? '-'}
-                  </p>
-                  <p>
-                    <span className="font-semibold">주문 유형</span>:{' '}
-                    {order.user_id ? '회원 결제' : '비회원 결제'}
-                  </p>
-                  <p>
-                    <span className="font-semibold">이메일</span>: {order.profile?.email ?? order.email ?? '-'}
-                  </p>
-                  <p>
-                    <span className="font-semibold">서비스</span>: {order.service}
-                  </p>
-                  <p>
-                    <span className="font-semibold">기간</span>: {order.period}
-                  </p>
-                  <p>
-                    <span className="font-semibold">결제금액</span>:{' '}
-                    {formatPrice(order.amount ?? order.price ?? 0)}
-                  </p>
-                  <p>
-                    <span className="font-semibold">결제일</span>: {formatDate(order.created_at)}
-                  </p>
-                  <p>
-                    <span className="font-semibold">마감일</span>: {formatDate(order.expires_at)}
-                  </p>
-                  <p>
-                    <span className="font-semibold">상태</span>: {expiryStatus}
-                  </p>
-                </article>
-              );
-            })}
-          </div>
-        )}
+        <div>
+          <h2 className="mb-4 text-lg font-bold text-slate-900">상담신청 내역</h2>
+          <AdminLeadsTable
+            leads={leads}
+            loading={leadsLoading}
+            loadError={leadsLoadError}
+            onUpdateLead={updateLead}
+          />
+        </div>
       </section>
     </main>
   );

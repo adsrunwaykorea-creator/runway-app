@@ -9,6 +9,53 @@
     "<strong>신청 접수 중 문제가 발생했습니다.</strong>" +
     "<p>아래 이메일 또는 카카오톡으로 문의해주세요.</p>";
 
+  const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign"];
+
+  function persistUtmFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    UTM_KEYS.forEach((key) => {
+      const value = params.get(key);
+      if (value) {
+        sessionStorage.setItem(`runway_${key}`, value);
+      }
+    });
+  }
+
+  function getTrackingContext(pageSource) {
+    persistUtmFromUrl();
+    const params = new URLSearchParams(window.location.search);
+
+    const readUtm = (key) => params.get(key) || sessionStorage.getItem(`runway_${key}`) || "";
+
+    const pathLabel = window.location.pathname === "/" ? "" : window.location.pathname;
+
+    return {
+      pageSource: `${pageSource || DEFAULT_PAGE_SOURCE}${pathLabel}`,
+      referrer: document.referrer || "",
+      utm_source: readUtm("utm_source"),
+      utm_medium: readUtm("utm_medium"),
+      utm_campaign: readUtm("utm_campaign"),
+      utmSource: readUtm("utm_source"),
+      utmMedium: readUtm("utm_medium"),
+      utmCampaign: readUtm("utm_campaign"),
+    };
+  }
+
+  function formatAdChannelLabel(value) {
+    if (!value) return "";
+    return value
+      .split(",")
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .map((part) => {
+        if (part === "sns") return "SNS 마케팅";
+        if (part === "db") return "리드 광고 운영";
+        if (part === "other") return "기타";
+        return part;
+      })
+      .join(", ");
+  }
+
   async function submitLead(payload) {
     console.log("contact form submit started");
     console.log("[contactLead] payload", payload);
@@ -135,16 +182,18 @@
       const phone = document.getElementById("detail-phone")?.value?.trim() || "";
       const company = document.getElementById("detail-company")?.value?.trim() || "";
       const businessType = document.getElementById("detail-industry")?.value?.trim() || "";
-      const adBudget = document.getElementById("detail-budget")?.value?.trim() || "";
+      const adBudget = document.getElementById("detail-budget")?.value?.trim() || "미입력";
       const message = document.getElementById("detail-message")?.value?.trim() || "";
       const targetExtra = document.getElementById("detail-target")?.value?.trim() || "";
       const selectedServices = Array.from(serviceChecks)
         .map((el) => el.value)
         .join(", ");
       const createdAt = new Date().toISOString();
+      const tracking = getTrackingContext(pageSource);
+      const adChannelLabel = formatAdChannelLabel(selectedServices);
 
-      if (!name || !phone || !businessType || !adBudget) {
-        alert("필수 항목을 모두 입력해주세요.");
+      if (!name || !phone || !businessType) {
+        alert("이름, 연락처, 업종은 필수 항목입니다.");
         return;
       }
 
@@ -155,27 +204,41 @@
         sessionKey: `contact-us-detail-${Date.now()}`,
         serviceType: selectedServices || "상세 문의",
         businessType,
-        region: businessType,
+        region: "미입력",
         monthlyBudget: adBudget,
         adBudget,
-        goal: [targetExtra, message].filter(Boolean).join(" / ") || "상담 문의",
-        message,
+        adChannel: adChannelLabel || selectedServices,
+        goal: message || [targetExtra].filter(Boolean).join(" / ") || "상담 문의",
+        message: message || null,
         contact: [name, phone].filter(Boolean).join(" / "),
         name,
         company,
         companyName: company,
         phone,
         privacyConsent: true,
+        privacyAgreed: true,
         createdAt,
+        pageSource: tracking.pageSource,
+        referrer: tracking.referrer,
+        utmSource: tracking.utmSource,
+        utmMedium: tracking.utmMedium,
+        utmCampaign: tracking.utmCampaign,
         payload: {
-          source: pageSource,
+          source: tracking.pageSource,
+          pageSource: tracking.pageSource,
           privacyConsent: true,
+          privacyAgreed: true,
           createdAt,
+          referrer: tracking.referrer,
+          utm_source: tracking.utm_source,
+          utm_medium: tracking.utm_medium,
+          utm_campaign: tracking.utm_campaign,
           name,
           companyName: company,
           phone,
           businessType,
           adBudget,
+          adChannel: adChannelLabel || selectedServices,
           message,
           target: targetExtra || null,
           services: selectedServices,
@@ -247,6 +310,7 @@
       const budget = document.getElementById("budget")?.value?.trim() || "";
       const message = document.getElementById("message")?.value?.trim() || "";
       const createdAt = new Date().toISOString();
+      const tracking = getTrackingContext(pageSource);
 
       if (!name || !phone || !industry) {
         alert("필수 항목을 모두 입력해주세요.");
@@ -265,9 +329,15 @@
         budget,
         message,
         privacyConsent: true,
+        privacyAgreed: true,
         createdAt,
         timestamp: new Date().toLocaleString("ko-KR"),
-        source: pageSource,
+        source: tracking.pageSource,
+        pageSource: tracking.pageSource,
+        referrer: tracking.referrer,
+        utm_source: tracking.utm_source,
+        utm_medium: tracking.utm_medium,
+        utm_campaign: tracking.utm_campaign,
       };
 
       try {
@@ -287,7 +357,13 @@
           companyName: formData.company,
           phone: formData.phone,
           privacyConsent: true,
+          privacyAgreed: true,
           createdAt,
+          pageSource: tracking.pageSource,
+          referrer: tracking.referrer,
+          utmSource: tracking.utmSource,
+          utmMedium: tracking.utmMedium,
+          utmCampaign: tracking.utmCampaign,
           payload: formData,
         });
 
