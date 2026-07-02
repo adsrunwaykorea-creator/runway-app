@@ -10,12 +10,9 @@ export function buildConsultationLeadsCsv(leads: ConsultationLeadRow[]): string 
   const header = [
     '신청일',
     '이름 / 연락처',
+    '회사명',
     '업종',
-    '지역',
-    '월 예산',
-    '상담 목적',
     '문의 내용',
-    '유입경로',
     '처리상태',
     '관리자 메모',
   ];
@@ -24,18 +21,14 @@ export function buildConsultationLeadsCsv(leads: ConsultationLeadRow[]): string 
     const name = lead.lead_name?.trim();
     const phone = lead.phone?.trim();
     const namePhone = name && phone ? `${name} / ${phone}` : name || phone || '';
-    const region = lead.region?.trim();
-    const regionDisplay = !region || region === '미입력' ? '' : region;
+    const company = lead.company_name?.trim() || lead.company?.trim() || '';
 
     return [
       formatDate(lead.created_at),
       namePhone,
+      company,
       lead.business_type,
-      regionDisplay,
-      lead.monthly_budget,
-      lead.goal,
       lead.message,
-      lead.page_source,
       lead.status,
       lead.admin_memo,
     ]

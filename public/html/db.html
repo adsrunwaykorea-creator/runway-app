@@ -628,66 +628,31 @@
                         <div class="form-section">
                             <h3>회사 정보</h3>
                             <div class="form-group">
-                                <label for="detail-company">회사명/상호명</label>
-                                <input type="text" id="detail-company" placeholder="예: OO교육">
+                                <label for="detail-company">회사명 / 매장명 / 상호명 *</label>
+                                <input type="text" id="detail-company" required placeholder="예: 런웨이 마케팅">
                             </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="detail-industry">업종 *</label>
-                                    <select id="detail-industry" required>
-                                        <option value="">선택해주세요</option>
-                                        <option value="교육/학원">교육/학원</option>
-                                        <option value="보험/금융">보험/금융</option>
-                                        <option value="프랜차이즈">프랜차이즈</option>
-                                        <option value="부동산">부동산/중개</option>
-                                        <option value="법률/세무">법률/세무/회계</option>
-                                        <option value="의료/건강">의료/건강</option>
-                                        <option value="IT/SW">IT/소프트웨어</option>
-                                        <option value="B2B 서비스">B2B 전문 서비스</option>
-                                        <option value="기타">기타</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="detail-target">목표 문의</label>
-                                    <input type="text" id="detail-target" placeholder="예: 상담 신청, 견적 문의">
-                                </div>
+                            <div class="form-group">
+                                <label for="detail-industry">업종 *</label>
+                                <select id="detail-industry" required>
+                                    <option value="">선택해주세요</option>
+                                    <option value="교육/학원">교육/학원</option>
+                                    <option value="보험/금융">보험/금융</option>
+                                    <option value="프랜차이즈">프랜차이즈</option>
+                                    <option value="부동산">부동산/중개</option>
+                                    <option value="법률/세무">법률/세무/회계</option>
+                                    <option value="의료/건강">의료/건강</option>
+                                    <option value="IT/SW">IT/소프트웨어</option>
+                                    <option value="B2B 서비스">B2B 전문 서비스</option>
+                                    <option value="기타">기타</option>
+                                </select>
                             </div>
                         </div>
 
                         <div class="form-section">
                             <h3>문의 내용</h3>
                             <div class="form-group">
-                                <label>관심 서비스 *</label>
-                                <div class="checkbox-group">
-                                    <label class="checkbox-item">
-                                        <input type="checkbox" name="service" value="sns">
-                                        <span>SNS 마케팅</span>
-                                    </label>
-                                    <label class="checkbox-item">
-                                        <input type="checkbox" name="service" value="db">
-                                        <span>리드 광고 운영</span>
-                                    </label>
-                                    <label class="checkbox-item">
-                                        <input type="checkbox" name="service" value="other">
-                                        <span>기타</span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="detail-budget">월 예상 광고비 *</label>
-                                <select id="detail-budget" required>
-                                    <option value="">선택해주세요</option>
-                                    <option value="100만원 미만">100만원 미만</option>
-                                    <option value="100~300만원">100~300만원</option>
-                                    <option value="300~500만원">300~500만원</option>
-                                    <option value="500~1000만원">500~1000만원</option>
-                                    <option value="1000만원 이상">1000만원 이상</option>
-                                    <option value="미정">아직 미정</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="detail-message">상세 문의 내용</label>
-                                <textarea id="detail-message" rows="5" placeholder="리드·문의 확보형 광고 운영 관련 궁금한 점이나 요청사항을 자유롭게 작성해주세요"></textarea>
+                                <label for="detail-message">문의 내용</label>
+                                <textarea id="detail-message" rows="6" placeholder="궁금하신 점이나 상담 내용을 자유롭게 작성해주세요"></textarea>
                             </div>
                         </div>
 
@@ -699,7 +664,7 @@
                             <div class="privacy-details">
                                 <button type="button" class="privacy-toggle">개인정보 처리방침 보기</button>
                                 <div class="privacy-content" style="display: none;">
-                                    <p><strong>● 수집하는 개인정보 항목</strong> 성명, 연락처, 이메일, 회사명, 업종, 목표 문의 유형, 문의내용</p>
+                                    <p><strong>● 수집하는 개인정보 항목</strong> 성명, 연락처, 회사명, 업종, 문의내용</p>
                                     <p><strong>● 개인정보의 수집 및 이용 목적</strong> 광고 상담 및 견적 제공, 서비스 안내, 문의 응대</p>
                                     <p><strong>● 개인정보의 보유 및 이용 기간</strong> 상담 완료 후 즉시 파기 (단, 관계 법령에 따라 보존 필요 시 별도 보관)</p>
                                 </div>
@@ -735,8 +700,6 @@
             <p class="modal-subtitle">아래 정보를 입력해주시면 빠르게 연락드리겠습니다</p>
             
             <form id="contactForm" class="contact-form">
-                <input type="hidden" name="serviceType" value="DB 수집 캠페인">
-
                 <div class="form-row">
                     <div class="form-group">
                         <label for="name">이름 *</label>
@@ -750,8 +713,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="company">회사명</label>
-                    <input type="text" id="company" name="company" placeholder="예: 런웨이">
+                    <label for="company">회사명 / 매장명 / 상호명 *</label>
+                    <input type="text" id="company" name="company" required placeholder="예: 런웨이 마케팅">
                 </div>
 
                 <div class="form-group">
@@ -759,34 +722,9 @@
                     <input type="text" id="industry" name="industry" required placeholder="예: 교육, 보험, 프랜차이즈, 전문서비스">
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="targetDB">목표 문의 수 (월)</label>
-                        <select id="targetDB" name="targetDB">
-                            <option value="">선택해주세요 (선택사항)</option>
-                            <option value="50건 미만">50건 미만</option>
-                            <option value="50-100건">50-100건</option>
-                            <option value="100-200건">100-200건</option>
-                            <option value="200-500건">200-500건</option>
-                            <option value="500건 이상">500건 이상</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="budget">예상 광고비 예산</label>
-                        <select id="budget" name="budget">
-                            <option value="">선택해주세요 (선택사항)</option>
-                            <option value="200만원 미만">200만원 미만</option>
-                            <option value="200-300만원">200-300만원</option>
-                            <option value="300-500만원">300-500만원</option>
-                            <option value="500만원 이상">500만원 이상</option>
-                        </select>
-                    </div>
-                </div>
-
                 <div class="form-group">
-                    <label for="message">상담 내용</label>
-                    <textarea id="message" name="message" rows="4" placeholder="현재 문의·리드 확보 방식, 목표, 궁금하신 점 등을 자유롭게 작성해주세요"></textarea>
+                    <label for="message">문의 내용</label>
+                    <textarea id="message" name="message" rows="6" placeholder="궁금하신 점이나 상담 내용을 자유롭게 작성해주세요"></textarea>
                 </div>
 
                 <button type="submit" class="btn btn-primary btn-submit">리드 광고 상담 신청하기</button>
@@ -825,7 +763,9 @@
                     <ul style="list-style: none; opacity: 0.9;">
                         <li style="margin-bottom: 0.5rem;"><a href="mailto:ads.runwaykorea@gmail.com" style="color: white; text-decoration: none;">ads.runwaykorea@gmail.com</a></li>
                         <li style="margin-bottom: 0.5rem;">평일 10:00 - 18:00</li>
-                        <li style="margin-bottom: 0.5rem;"><a href="/refund-policy" style="color: white; text-decoration: none;">청약철회·환불정책</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="/terms" style="color: white; text-decoration: none;">이용약관</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="/privacy" style="color: white; text-decoration: none;">개인정보처리방침</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="/refund" style="color: white; text-decoration: none;">환불규정</a></li>
                     </ul>
                 </div>
             </div>

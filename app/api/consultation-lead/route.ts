@@ -67,7 +67,6 @@ export async function POST(request: Request) {
   const name = str(body.name);
   const company = str(body.company) || str(body.companyName);
   const phone = str(body.phone);
-  const serviceType = str(body.serviceType);
   const message = str(body.message) || str(extra?.message);
   const adBudget = str(body.adBudget) || str(body.monthlyBudget) || str(extra?.adBudget);
   const privacyAgreed =
@@ -98,16 +97,17 @@ export async function POST(request: Request) {
   const utmMedium = str(body.utmMedium) || str(extra?.utm_medium) || str(extra?.utmMedium) || null;
   const utmCampaign =
     str(body.utmCampaign) || str(extra?.utm_campaign) || str(extra?.utmCampaign) || null;
-  const adChannel = str(body.adChannel) || serviceType || null;
+  const adChannel = str(body.adChannel) || null;
 
-  if (source === "contact_us" && (!name || !phone || !businessType)) {
+  if (source === "contact_us" && (!name || !phone || !company || !businessType)) {
     console.error("[consultation-lead] missing required contact fields", {
       name: !!name,
       phone: !!phone,
+      company: !!company,
       businessType: !!businessType,
     });
     return NextResponse.json(
-      { success: false, message: "이름, 연락처, 업종은 필수 항목입니다." },
+      { success: false, message: "회사명 또는 매장명을 입력해 주세요." },
       { status: 400 },
     );
   }
@@ -137,7 +137,7 @@ export async function POST(request: Request) {
     adBudget: monthlyBudget,
     adChannel,
     message: message || null,
-    serviceType: serviceType || null,
+    serviceType: null,
   };
 
   try {
@@ -152,8 +152,9 @@ export async function POST(request: Request) {
       contact,
       lead_name: name || null,
       company: company || null,
+      company_name: company || null,
       phone: phone || null,
-      service_type: serviceType || null,
+      service_type: null,
       ad_channel: adChannel,
       message: message || goal || null,
       privacy_agreed: privacyAgreed,
@@ -173,7 +174,15 @@ export async function POST(request: Request) {
       business_type: row.business_type,
     });
 
-    const { error } = await supabase.from("consultation_leads").insert(row);
+    let { error } = await supabase.from("consultation_leads").insert(row);
+
+    if (error?.code === "42703" && error.message?.includes("company_name")) {
+      const legacyRow = {
+        ...row,
+      };
+      delete (legacyRow as Record<string, unknown>).company_name;
+      ({ error } = await supabase.from("consultation_leads").insert(legacyRow));
+    }
 
     if (error) {      console.error("[consultation-lead] insert consultation_leads failed", {
         table: "consultation_leads",

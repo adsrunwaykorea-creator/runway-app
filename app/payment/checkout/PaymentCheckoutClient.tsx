@@ -255,7 +255,7 @@ export default function PaymentCheckoutClient() {
                 <br />
                 결제 완료 후 확인서는 선택하신 채널(카카오 또는 문자) 기준으로 순차 발송됩니다.
                 <br />
-                <Link href="/refund-policy" className="font-semibold text-zinc-800 underline underline-offset-2">
+                <Link href="/refund" className="font-semibold text-zinc-800 underline underline-offset-2">
                   청약철회·환불정책 확인
                 </Link>
               </p>
@@ -365,7 +365,7 @@ export default function PaymentCheckoutClient() {
             <span>
               <span className="font-semibold text-zinc-900">[필수]</span> 환불정책 및 개인정보 수집·이용에
               동의합니다.{' '}
-              <Link href="/refund-policy" className="font-medium text-zinc-900 underline underline-offset-2">
+              <Link href="/refund" className="font-medium text-zinc-900 underline underline-offset-2">
                 환불정책
               </Link>
               {' · '}
@@ -392,7 +392,7 @@ export default function PaymentCheckoutClient() {
 
       <footer className="mx-auto mt-8 w-full max-w-md border-t border-zinc-200/80 pt-5 text-center text-[11px] leading-relaxed text-zinc-500">
         <div className="mb-3 flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
-          <Link href="/refund-policy" className="text-zinc-600 underline-offset-2 hover:text-zinc-900 hover:underline">
+          <Link href="/refund" className="text-zinc-600 underline-offset-2 hover:text-zinc-900 hover:underline">
             청약철회·환불정책
           </Link>
           <span className="text-zinc-300" aria-hidden>
@@ -404,7 +404,7 @@ export default function PaymentCheckoutClient() {
           <span className="text-zinc-300" aria-hidden>
             |
           </span>
-          <Link href="/refund-policy" className="text-zinc-600 underline-offset-2 hover:text-zinc-900 hover:underline">
+          <Link href="/refund" className="text-zinc-600 underline-offset-2 hover:text-zinc-900 hover:underline">
             이용약관·거래조건
           </Link>
         </div>

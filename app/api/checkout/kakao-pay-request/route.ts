@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { KAKAO_PAY_CHECKOUT_PRODUCT } from '@/lib/checkout/kakao-pay-product';
+import { findConsultationLeadId } from '@/lib/payment/complete-kakao-payment';
+import { isMissingColumnError } from '@/lib/payment/payment-schema';
 import { getSupabaseAdminClient } from '@/lib/supabase/server';
 
 type Body = {
@@ -101,11 +103,34 @@ export async function POST(request: Request) {
 
   try {
     const supabase = getSupabaseAdminClient();
-    const { data, error } = await supabase
+    const consultationLeadId = await findConsultationLeadId(supabase, name, phone);
+
+    let data: { id: string; created_at: string; product_name: string; amount: number; name: string } | null = null;
+    let error: { code?: string; message?: string; details?: string; hint?: string } | null = null;
+
+    const extendedInsert = await supabase
       .from('payment_requests')
-      .insert(row)
+      .insert({
+        ...row,
+        payment_status: 'pending',
+        consultation_lead_id: consultationLeadId,
+      })
       .select('id, created_at, product_name, amount, name')
       .single();
+
+    data = extendedInsert.data;
+    error = extendedInsert.error;
+
+    if (error && isMissingColumnError(error, 'payment_status')) {
+      console.warn('[checkout/kakao-pay-request] legacy schema insert — payment_status column missing');
+      const legacyInsert = await supabase
+        .from('payment_requests')
+        .insert(row)
+        .select('id, created_at, product_name, amount, name')
+        .single();
+      data = legacyInsert.data;
+      error = legacyInsert.error;
+    }
 
     if (error) {
       console.error('[checkout/kakao-pay-request] Supabase insert failed', {

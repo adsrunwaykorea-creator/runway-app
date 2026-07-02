@@ -1,56 +1,83 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { formatDate } from '@/lib/date';
 import { downloadConsultationLeadsCsv } from '@/lib/admin/consultation-leads-csv';
+import { AdminPagination } from '@/components/admin/AdminPagination';
+import { AdminSearchBar } from '@/components/admin/AdminSearchBar';
 import {
-  CONSULTATION_LEAD_STATUSES,
+  SubscriberRegisterModal,
+  type SubscriberRegisterForm,
+} from '@/components/admin/SubscriberRegisterModal';
+import {
+  CONSULTATION_LEAD_ENDED_STATUS,
+  CONSULTATION_LEAD_MANUAL_STATUSES,
+  normalizeConsultationLeadStatus,
   type ConsultationLeadRow,
-  type ConsultationLeadStatus,
+  type ConsultationLeadManualStatus,
 } from '@/types/consultation-lead';
 
-function displayNamePhone(lead: ConsultationLeadRow): string {
-  const name = lead.lead_name?.trim();
-  const phone = lead.phone?.trim();
-  if (name && phone) return `${name} / ${phone}`;
-  return name || phone || '-';
+function displayCompany(lead: ConsultationLeadRow): string {
+  return lead.company_name?.trim() || lead.company?.trim() || '-';
 }
 
-function displayRegion(lead: ConsultationLeadRow): string {
-  const region = lead.region?.trim();
-  if (!region || region === '미입력') return '-';
-  return region;
-}
-
-function displayGoal(lead: ConsultationLeadRow): string {
-  return lead.goal?.trim() || '-';
-}
-
-function displayMessage(lead: ConsultationLeadRow): string {
-  return lead.message?.trim() || '-';
+function leadStatusValue(lead: ConsultationLeadRow): ConsultationLeadManualStatus {
+  const normalized = normalizeConsultationLeadStatus(lead.status);
+  return (CONSULTATION_LEAD_MANUAL_STATUSES as readonly string[]).includes(normalized)
+    ? (normalized as ConsultationLeadManualStatus)
+    : '신규';
 }
 
 type Props = {
   leads: ConsultationLeadRow[];
   loading: boolean;
   loadError: string | null;
+  total: number;
+  page: number;
+  totalPages: number;
+  searchQuery: string;
+  onSearchQueryChange: (value: string) => void;
+  onSearch: () => void;
+  onPageChange: (page: number) => void;
   onUpdateLead: (
-    id: string,
-    patch: { status?: ConsultationLeadStatus; admin_memo?: string },
+    lead: ConsultationLeadRow,
+    patch: {
+      status?: ConsultationLeadManualStatus | typeof CONSULTATION_LEAD_ENDED_STATUS;
+      admin_memo?: string;
+      message?: string;
+      payment_status?: string;
+    },
   ) => Promise<boolean>;
+  onRegisterSubscriber: (
+    lead: ConsultationLeadRow,
+    form: SubscriberRegisterForm,
+  ) => Promise<boolean>;
+  onEndConsultation: (lead: ConsultationLeadRow) => Promise<boolean>;
 };
 
-export function AdminLeadsTable({ leads, loading, loadError, onUpdateLead }: Props) {
+export function AdminLeadsTable({
+  leads,
+  loading,
+  loadError,
+  total,
+  page,
+  totalPages,
+  searchQuery,
+  onSearchQueryChange,
+  onSearch,
+  onPageChange,
+  onUpdateLead,
+  onRegisterSubscriber,
+  onEndConsultation,
+}: Props) {
   const [memoDrafts, setMemoDrafts] = useState<Record<string, string>>({});
+  const [messageDrafts, setMessageDrafts] = useState<Record<string, string>>({});
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [registerLead, setRegisterLead] = useState<ConsultationLeadRow | null>(null);
+  const [registering, setRegistering] = useState(false);
 
-  const memoValue = (lead: ConsultationLeadRow) =>
-    memoDrafts[lead.id] ?? lead.admin_memo ?? '';
-
-  const sortedLeads = useMemo(
-    () => [...leads].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
-    [leads],
-  );
+  const memoValue = (lead: ConsultationLeadRow) => memoDrafts[lead.id] ?? lead.admin_memo ?? '';
+  const messageValue = (lead: ConsultationLeadRow) => messageDrafts[lead.id] ?? lead.message ?? '';
 
   if (loading) {
     return <p className="text-sm text-zinc-500">상담신청 데이터를 불러오는 중...</p>;
@@ -64,108 +91,161 @@ export function AdminLeadsTable({ leads, loading, loadError, onUpdateLead }: Pro
     );
   }
 
-  if (sortedLeads.length === 0) {
-    return (
-      <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-600">
-        저장된 상담신청 내역이 없습니다.
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-zinc-600">총 {sortedLeads.length}건 (최신순)</p>
-        <button
-          type="button"
-          onClick={() => downloadConsultationLeadsCsv(sortedLeads)}
-          className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800 transition hover:bg-zinc-50"
-        >
-          CSV 다운로드
-        </button>
-      </div>
+    <>
+      <SubscriberRegisterModal
+        lead={registerLead}
+        open={registerLead !== null}
+        submitting={registering}
+        onClose={() => setRegisterLead(null)}
+        onSubmit={async (form) => {
+          if (!registerLead) return false;
+          setRegistering(true);
+          const ok = await onRegisterSubscriber(registerLead, form);
+          setRegistering(false);
+          return ok;
+        }}
+      />
 
-      <div className="-mx-2 overflow-x-auto px-2 sm:mx-0 sm:px-0">
-        <table className="min-w-[1100px] w-full border-collapse text-left text-sm">
-          <thead>
-            <tr className="border-b border-zinc-200 bg-zinc-50 text-xs font-semibold uppercase tracking-wide text-zinc-600">
-              <th className="px-3 py-3">신청일</th>
-              <th className="px-3 py-3">이름 / 연락처</th>
-              <th className="px-3 py-3">업종</th>
-              <th className="px-3 py-3">지역</th>
-              <th className="px-3 py-3">월 예산</th>
-              <th className="px-3 py-3">상담 목적</th>
-              <th className="px-3 py-3">문의 내용</th>
-              <th className="px-3 py-3">유입경로</th>
-              <th className="px-3 py-3">처리상태</th>
-              <th className="px-3 py-3 min-w-[220px]">관리자 메모</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedLeads.map((lead) => (
-              <tr key={lead.id} className="border-b border-zinc-100 align-top">
-                <td className="px-3 py-3 whitespace-nowrap text-zinc-700">{formatDate(lead.created_at)}</td>
-                <td className="px-3 py-3 font-medium text-slate-900">{displayNamePhone(lead)}</td>
-                <td className="px-3 py-3">{lead.business_type}</td>
-                <td className="px-3 py-3">{displayRegion(lead)}</td>
-                <td className="px-3 py-3 whitespace-nowrap">{lead.monthly_budget}</td>
-                <td className="px-3 py-3 max-w-[180px] whitespace-pre-wrap break-words text-zinc-700">
-                  {displayGoal(lead)}
-                </td>
-                <td className="px-3 py-3 max-w-[220px] whitespace-pre-wrap break-words text-zinc-700">
-                  {displayMessage(lead)}
-                </td>
-                <td className="px-3 py-3">{lead.page_source ?? '-'}</td>
-                <td className="px-3 py-3">
-                  <select
-                    value={lead.status}
-                    onChange={async (event) => {
-                      setSavingId(lead.id);
-                      await onUpdateLead(lead.id, {
-                        status: event.target.value as ConsultationLeadStatus,
-                      });
-                      setSavingId(null);
-                    }}
-                    disabled={savingId === lead.id}
-                    className="w-full min-w-[110px] rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-sm"
-                  >
-                    {CONSULTATION_LEAD_STATUSES.map((status) => (
-                      <option key={status} value={status}>
-                        {status}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td className="px-3 py-3">
-                  <div className="flex flex-col gap-2">
-                    <textarea
-                      value={memoValue(lead)}
-                      onChange={(event) =>
-                        setMemoDrafts((prev) => ({ ...prev, [lead.id]: event.target.value }))
-                      }
-                      rows={3}
-                      placeholder="관리자 메모"
-                      className="w-full rounded-md border border-zinc-300 px-2 py-1.5 text-sm"
-                    />
+      <div className="space-y-4">
+        <AdminSearchBar
+          value={searchQuery}
+          onChange={onSearchQueryChange}
+          onSearch={onSearch}
+        />
+
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => downloadConsultationLeadsCsv(leads)}
+            disabled={leads.length === 0}
+            className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold text-slate-800 disabled:opacity-50"
+          >
+            CSV 다운로드
+          </button>
+        </div>
+
+        {leads.length === 0 ? (
+          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 text-center text-sm text-zinc-600">
+            표시할 상담신청 내역이 없습니다.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {leads.map((lead) => (
+              <article
+                key={lead.id}
+                className="rounded-xl border border-zinc-200 bg-zinc-50/50 p-4 shadow-sm"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs text-zinc-500">신청일 {formatDate(lead.created_at)}</p>
+                    <h3 className="mt-1 text-base font-bold text-slate-900">
+                      {lead.lead_name ?? '-'} · {displayCompany(lead)}
+                    </h3>
+                    <p className="mt-1 text-sm text-zinc-600">
+                      {lead.phone ?? '-'} · {lead.business_type}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <select
+                      value={leadStatusValue(lead)}
+                      disabled={savingId === lead.id}
+                      onChange={async (event) => {
+                        if (!lead.id) return;
+                        setSavingId(lead.id);
+                        await onUpdateLead(lead, {
+                          status: event.target.value as ConsultationLeadManualStatus,
+                        });
+                        setSavingId(null);
+                      }}
+                      className="rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-sm"
+                    >
+                      {CONSULTATION_LEAD_MANUAL_STATUSES.map((status) => (
+                        <option key={status} value={status}>
+                          {status}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      disabled={savingId === lead.id}
+                      onClick={() => setRegisterLead(lead)}
+                      className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
+                    >
+                      가입자 등록
+                    </button>
                     <button
                       type="button"
                       disabled={savingId === lead.id}
                       onClick={async () => {
+                        if (!window.confirm('이 고객을 상담종료 처리할까요?')) return;
                         setSavingId(lead.id);
-                        await onUpdateLead(lead.id, { admin_memo: memoValue(lead) });
+                        await onEndConsultation(lead);
                         setSavingId(null);
                       }}
-                      className="rounded-md bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-60"
+                      className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 disabled:opacity-60"
                     >
-                      메모 저장
+                      상담 종료
                     </button>
                   </div>
-                </td>
-              </tr>
+                </div>
+
+                <div className="mt-3">
+                  <label className="text-xs font-semibold text-zinc-600">문의내용</label>
+                  <textarea
+                    value={messageValue(lead)}
+                    onChange={(event) =>
+                      setMessageDrafts((prev) => ({ ...prev, [lead.id]: event.target.value }))
+                    }
+                    rows={3}
+                    className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-sm"
+                  />
+                  <button
+                    type="button"
+                    disabled={savingId === lead.id}
+                    onClick={async () => {
+                      if (!lead.id) return;
+                      setSavingId(lead.id);
+                      await onUpdateLead(lead, { message: messageValue(lead) });
+                      setSavingId(null);
+                    }}
+                    className="mt-1 rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs font-semibold disabled:opacity-60"
+                  >
+                    문의내용 저장
+                  </button>
+                </div>
+
+                <div className="mt-3">
+                  <label className="text-xs font-semibold text-zinc-600">관리자 메모</label>
+                  <textarea
+                    value={memoValue(lead)}
+                    onChange={(event) =>
+                      setMemoDrafts((prev) => ({ ...prev, [lead.id]: event.target.value }))
+                    }
+                    rows={2}
+                    className="mt-1 w-full rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-sm"
+                  />
+                  <button
+                    type="button"
+                    disabled={savingId === lead.id}
+                    onClick={async () => {
+                      if (!lead.id) return;
+                      setSavingId(lead.id);
+                      await onUpdateLead(lead, { admin_memo: memoValue(lead) });
+                      setSavingId(null);
+                    }}
+                    className="mt-1 rounded-md bg-slate-900 px-2 py-1 text-xs font-semibold text-white disabled:opacity-60"
+                  >
+                    메모 저장
+                  </button>
+                </div>
+              </article>
             ))}
-          </tbody>
-        </table>
+          </div>
+        )}
+
+        <AdminPagination total={total} page={page} totalPages={totalPages} onPageChange={onPageChange} />
       </div>
-    </div>
+    </>
   );
 }

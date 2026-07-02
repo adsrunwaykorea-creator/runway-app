@@ -8,7 +8,7 @@ import {
   getCheckoutValidationState,
 } from '@/lib/checkout/checkout-validation';
 import { KAKAO_PAY_CHECKOUT_PRODUCT } from '@/lib/checkout/kakao-pay-product';
-import { RUNWAY_BUSINESS_INFO } from '@/lib/site/business-info';
+import { LegalFooter } from '@/components/legal/LegalPageShell';
 import { CHECKOUT_COMPLETE_STORAGE_KEY, type CheckoutCompleteSummary } from '@/types/payment-request';
 
 const INDUSTRY_OPTIONS = [
@@ -118,14 +118,37 @@ export default function CheckoutClient() {
         throw new Error(result?.message ?? '결제 신청에 실패했습니다.');
       }
 
-      const summary: CheckoutCompleteSummary = {
-        name: result.summary?.name ?? customerName.trim(),
-        productName: result.summary?.productName ?? product.displayName,
-        amount: result.summary?.amount ?? product.amount,
-        createdAt: result.summary?.createdAt ?? new Date().toISOString(),
-      };
-      sessionStorage.setItem(CHECKOUT_COMPLETE_STORAGE_KEY, JSON.stringify(summary));
-      router.push('/checkout/complete');
+      const requestId = result.requestId as string | null;
+      if (!requestId) {
+        throw new Error('결제 신청 ID를 받지 못했습니다.');
+      }
+
+      console.log('[checkout] POST /api/checkout/kakao-pay-ready', { requestId });
+      const readyResponse = await fetch('/api/checkout/kakao-pay-ready', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestId }),
+      });
+      const readyResult = await readyResponse.json();
+
+      if (readyResponse.ok && readyResult?.success && readyResult?.redirectUrl) {
+        window.location.href = String(readyResult.redirectUrl);
+        return;
+      }
+
+      if (readyResponse.status === 503) {
+        const summary: CheckoutCompleteSummary = {
+          name: result.summary?.name ?? customerName.trim(),
+          productName: result.summary?.productName ?? product.displayName,
+          amount: result.summary?.amount ?? product.amount,
+          createdAt: result.summary?.createdAt ?? new Date().toISOString(),
+        };
+        sessionStorage.setItem(CHECKOUT_COMPLETE_STORAGE_KEY, JSON.stringify(summary));
+        router.push('/checkout/complete');
+        return;
+      }
+
+      throw new Error(readyResult?.message ?? '카카오페이 결제 화면으로 이동하지 못했습니다.');
     } catch (submitError) {
       console.error('[checkout] submit error', submitError);
       setError(submitError instanceof Error ? submitError.message : '결제 신청에 실패했습니다.');
@@ -265,8 +288,8 @@ export default function CheckoutClient() {
             </ul>
             <p className="mt-4 text-sm text-zinc-600">
               자세한 내용은{' '}
-              <Link href="/refund-policy" className="font-semibold text-blue-700 underline">
-                환불정책
+              <Link href="/refund" className="font-semibold text-blue-700 underline">
+                환불규정
               </Link>
               을 확인해주세요.
             </p>
@@ -282,7 +305,12 @@ export default function CheckoutClient() {
                   onChange={(e) => setPrivacyAgreed(e.target.checked)}
                   className="mt-1 h-4 w-4 shrink-0"
                 />
-                <span>개인정보 수집 및 이용에 동의합니다. (필수)</span>
+                <span>
+                  <Link href="/privacy" className="font-semibold text-blue-700 underline" onClick={(e) => e.stopPropagation()}>
+                    개인정보 수집 및 이용
+                  </Link>
+                  에 동의합니다. (필수)
+                </span>
               </label>
               <div className="flex items-start gap-3 text-sm text-zinc-800">
                 <input
@@ -293,12 +321,11 @@ export default function CheckoutClient() {
                   className="mt-1 h-4 w-4 shrink-0"
                 />
                 <label htmlFor="terms-agreed" className="cursor-pointer">
-                  서비스 이용조건 및{' '}
-                  <Link
-                    href="/refund-policy"
-                    className="font-semibold text-blue-700 underline"
-                    onClick={(e) => e.stopPropagation()}
-                  >
+                  <Link href="/terms" className="font-semibold text-blue-700 underline" onClick={(e) => e.stopPropagation()}>
+                    서비스 이용조건
+                  </Link>
+                  {' 및 '}
+                  <Link href="/refund" className="font-semibold text-blue-700 underline" onClick={(e) => e.stopPropagation()}>
                     환불규정
                   </Link>
                   에 동의합니다. (필수)
@@ -332,45 +359,7 @@ export default function CheckoutClient() {
           </button>
         </form>
 
-        <footer className="rounded-2xl border border-zinc-200 bg-white p-6 text-sm leading-7 text-zinc-700 shadow-sm sm:p-8">
-          <h2 className="text-base font-bold text-slate-900">사업자 정보</h2>
-          <ul className="mt-3 space-y-1">
-            <li>
-              <span className="font-semibold">상호명:</span> {RUNWAY_BUSINESS_INFO.companyName}
-            </li>
-            <li>
-              <span className="font-semibold">대표자명:</span> {RUNWAY_BUSINESS_INFO.representative}
-            </li>
-            <li>
-              <span className="font-semibold">사업자등록번호:</span>{' '}
-              {RUNWAY_BUSINESS_INFO.businessRegistrationNumber}
-            </li>
-            <li>
-              <span className="font-semibold">사업장 주소:</span> {RUNWAY_BUSINESS_INFO.address}
-            </li>
-            <li>
-              <span className="font-semibold">전화번호:</span>{' '}
-              <a href={`tel:${RUNWAY_BUSINESS_INFO.phone.replace(/-/g, '')}`} className="text-blue-700 underline">
-                {RUNWAY_BUSINESS_INFO.phone}
-              </a>
-            </li>
-            <li>
-              <span className="font-semibold">이메일:</span>{' '}
-              <a href={`mailto:${RUNWAY_BUSINESS_INFO.email}`} className="text-blue-700 underline">
-                {RUNWAY_BUSINESS_INFO.email}
-              </a>
-            </li>
-            <li>
-              <span className="font-semibold">통신판매업 신고번호:</span>{' '}
-              {RUNWAY_BUSINESS_INFO.ecommerceRegistration}
-            </li>
-          </ul>
-          <p className="mt-4">
-            <Link href="/" className="font-semibold text-blue-700 underline">
-              홈으로 돌아가기
-            </Link>
-          </p>
-        </footer>
+        <LegalFooter />
       </div>
     </main>
   );

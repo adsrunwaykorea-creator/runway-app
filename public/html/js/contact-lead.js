@@ -172,28 +172,21 @@
         return;
       }
 
-      const serviceChecks = form.querySelectorAll('input[name="service"]:checked');
-      if (serviceChecks.length === 0) {
-        alert("관심 서비스를 최소 1개 이상 선택해주세요.");
-        return;
-      }
-
       const name = document.getElementById("detail-name")?.value?.trim() || "";
       const phone = document.getElementById("detail-phone")?.value?.trim() || "";
       const company = document.getElementById("detail-company")?.value?.trim() || "";
       const businessType = document.getElementById("detail-industry")?.value?.trim() || "";
-      const adBudget = document.getElementById("detail-budget")?.value?.trim() || "미입력";
       const message = document.getElementById("detail-message")?.value?.trim() || "";
-      const targetExtra = document.getElementById("detail-target")?.value?.trim() || "";
-      const selectedServices = Array.from(serviceChecks)
-        .map((el) => el.value)
-        .join(", ");
       const createdAt = new Date().toISOString();
       const tracking = getTrackingContext(pageSource);
-      const adChannelLabel = formatAdChannelLabel(selectedServices);
 
       if (!name || !phone || !businessType) {
         alert("이름, 연락처, 업종은 필수 항목입니다.");
+        return;
+      }
+
+      if (!company) {
+        alert("회사명 또는 매장명을 입력해 주세요.");
         return;
       }
 
@@ -202,13 +195,12 @@
       const payload = {
         source: "contact_us",
         sessionKey: `contact-us-detail-${Date.now()}`,
-        serviceType: selectedServices || "상세 문의",
         businessType,
         region: "미입력",
-        monthlyBudget: adBudget,
-        adBudget,
-        adChannel: adChannelLabel || selectedServices,
-        goal: message || [targetExtra].filter(Boolean).join(" / ") || "상담 문의",
+        monthlyBudget: "미입력",
+        adBudget: "미입력",
+        adChannel: null,
+        goal: message || "상담 문의",
         message: message || null,
         contact: [name, phone].filter(Boolean).join(" / "),
         name,
@@ -237,11 +229,9 @@
           companyName: company,
           phone,
           businessType,
-          adBudget,
-          adChannel: adChannelLabel || selectedServices,
+          adBudget: null,
+          adChannel: null,
           message,
-          target: targetExtra || null,
-          services: selectedServices,
         },
       };
 
@@ -261,7 +251,6 @@
   function initContactModalForm(options) {
     const config = options || {};
     const pageSource = config.pageSource || DEFAULT_PAGE_SOURCE;
-    const defaultServiceType = config.serviceType || "DB 수집 캠페인";
 
     const modal = document.getElementById("contactModal");
     const contactForm = document.getElementById("contactForm");
@@ -306,8 +295,6 @@
       const company = document.getElementById("company")?.value?.trim() || "";
       const phone = document.getElementById("phone")?.value?.trim() || "";
       const industry = document.getElementById("industry")?.value?.trim() || "";
-      const targetDB = document.getElementById("targetDB")?.value?.trim() || "";
-      const budget = document.getElementById("budget")?.value?.trim() || "";
       const message = document.getElementById("message")?.value?.trim() || "";
       const createdAt = new Date().toISOString();
       const tracking = getTrackingContext(pageSource);
@@ -317,16 +304,17 @@
         return;
       }
 
+      if (!company) {
+        alert("회사명 또는 매장명을 입력해 주세요.");
+        return;
+      }
+
       const formData = {
-        serviceType: defaultServiceType,
         name,
         company,
         phone,
         industry,
         businessType: industry,
-        targetDB,
-        adBudget: budget,
-        budget,
         message,
         privacyConsent: true,
         privacyAgreed: true,
@@ -344,12 +332,11 @@
         await submitLead({
           source: "contact_us",
           sessionKey: `contact-us-${Date.now()}`,
-          serviceType: formData.serviceType,
           businessType: formData.businessType,
-          region: formData.industry,
-          monthlyBudget: formData.budget || "미입력",
-          adBudget: formData.budget || "미입력",
-          goal: [formData.targetDB, formData.message].filter(Boolean).join(" / ") || "상담 문의",
+          region: "미입력",
+          monthlyBudget: "미입력",
+          adBudget: "미입력",
+          goal: formData.message || "상담 문의",
           message: formData.message,
           contact: [formData.name, formData.phone].filter(Boolean).join(" / "),
           name: formData.name,
@@ -404,7 +391,7 @@
     if (!hasDetail && !hasModal) return;
 
     window.__runwayContactLeadBootstrapped = true;
-    initContactModalForm({ serviceType: "DB 수집 캠페인" });
+    initContactModalForm();
 
     const btnText = document.getElementById("detailSubmitButtonText")?.textContent?.trim();
     initContactDetailForm({ submitButtonText: btnText || "상담신청" });

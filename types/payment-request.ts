@@ -1,3 +1,5 @@
+import type { PaymentChannel, PaymentRequestStatus } from '@/lib/payment/payment-constants';
+
 export type PaymentRequestRow = {
   id: string;
   name: string;
@@ -11,9 +13,16 @@ export type PaymentRequestRow = {
   vat_included: boolean;
   service_period: string | null;
   payment_method: string;
+  payment_channel?: PaymentChannel | string | null;
+  payment_status?: string | null;
+  paid_at?: string | null;
+  depositor_name?: string | null;
+  tax_invoice_required?: boolean | null;
+  admin_memo?: string | null;
+  consultation_lead_id?: string | null;
   privacy_agreed: boolean;
   terms_agreed: boolean;
-  status: string;
+  status: PaymentRequestStatus | string;
   created_at: string;
   updated_at: string;
 };
