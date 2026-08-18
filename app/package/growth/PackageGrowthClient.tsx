@@ -14,7 +14,7 @@ export default function PackageGrowthClient() {
 
   return (
     <StaticHtmlLoader
-      src="/html/package-growth.html?v=lead02"
+      src="/html/package-growth.html?v=lead03"
       normalizeHtml={normalizeMarketingHtml}
     />
   );

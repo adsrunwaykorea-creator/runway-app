@@ -426,7 +426,6 @@
       (submitButtonTextEl && submitButtonTextEl.textContent.trim()) ||
       (submitButton && submitButton.textContent.trim()) ||
       "무료 사업 성장 상담 신청하기 →";
-    const industryOther = document.getElementById("growth-industry-other");
     const phoneInput = document.getElementById("growth-phone");
     if (phoneInput) phoneInput.addEventListener("input", formatPhoneInput);
 
@@ -461,8 +460,7 @@
       const name = document.getElementById("growth-name")?.value?.trim() || "";
       const phone = document.getElementById("growth-phone")?.value?.trim() || "";
       const company = document.getElementById("growth-company")?.value?.trim() || "";
-      let businessType = document.getElementById("growth-industry")?.value?.trim() || "";
-      const typeOther = industryOther ? industryOther.value.trim() : "";
+      const businessType = document.getElementById("growth-industry")?.value?.trim() || "";
       const region = document.getElementById("growth-region")?.value?.trim() || "";
       const currentStatus =
         form.querySelector('input[name="marketing_status"]:checked')?.value?.trim() || "";
@@ -471,14 +469,6 @@
       if (!name || !phone || !company || !businessType || !region || !currentStatus) {
         alert("필수 항목을 모두 입력해 주세요.");
         return;
-      }
-      if (businessType === "기타") {
-        if (!typeOther) {
-          alert("업종을 직접 입력해 주세요.");
-          industryOther && industryOther.focus();
-          return;
-        }
-        businessType = typeOther;
       }
       if (!privacy || !privacy.checked) {
         alert("개인정보 수집 및 이용에 동의해 주세요.");
