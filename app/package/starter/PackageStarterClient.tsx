@@ -14,7 +14,7 @@ export default function PackageStarterClient() {
 
   return (
     <StaticHtmlLoader
-      src="/html/package-starter.html?v=lead06"
+      src="/html/package-starter.html?v=lead07"
       normalizeHtml={normalizeMarketingHtml}
     />
   );

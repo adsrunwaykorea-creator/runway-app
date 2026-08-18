@@ -316,19 +316,6 @@
     .showcase-panel{grid-template-columns:1fr; gap:24px; padding:24px;}
   }
 
-  .trust{background:var(--off);}
-  .trust-icon{width:56px;height:56px;border-radius:50%;background:var(--blue-deep);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;}
-  .trust-icon svg{width:26px;height:26px;stroke:#fff;}
-  .trust-list{max-width:640px;margin:40px auto 0;}
-  .trust-item{display:flex;align-items:center;justify-content:center;gap:20px;padding:22px 0;border-bottom:1px dashed var(--line);}
-  .trust-item:last-child{border-bottom:none;}
-  .trust-num{width:36px;height:36px;flex-shrink:0;border-radius:8px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono';font-weight:700;font-size:14px;color:var(--blue-deep);}
-  .trust-text{font-size:15px;font-weight:700;text-align:center;}
-  .trust-text .hl{color:var(--blue-deep);}
-  .trust-callout{margin:36px auto 0;max-width:520px;background:var(--blue-deep);color:#fff;font-weight:800;font-size:16px;padding:16px 24px;border-radius:10px;}
-  .trust-proof{margin-top:20px;font-size:14px;color:var(--slate);font-weight:600;}
-  .trust-proof .hl{color:var(--blue-deep);font-weight:800;}
-
   .faq-list{margin-top:32px;max-width:720px;}
   .faq-item{border-bottom:1px solid var(--line);}
   .faq-q{width:100%;text-align:left;background:none;border:none;cursor:pointer;padding:18px 0;display:flex;justify-content:space-between;align-items:center;font-size:14.5px;font-weight:700;font-family:'Pretendard';}
@@ -431,6 +418,8 @@ body.page-package-starter .final-cta{
   margin-right:auto;
   margin-bottom:0;
 }
+body.page-package-starter #includes{padding-bottom:48px;}
+body.page-package-starter .process{padding-top:72px;}
 @media(max-width:800px){
   body.page-package-starter{
     word-break:keep-all;
@@ -449,8 +438,7 @@ body.page-package-starter .final-cta{
 
   body.page-package-starter h2,
   body.page-package-starter .empathy-title,
-  body.page-package-starter .final-cta h2,
-  body.page-package-starter .trust h2{
+  body.page-package-starter .final-cta h2{
     font-size:28px;
     font-weight:800;
     line-height:1.35;
@@ -490,7 +478,6 @@ body.page-package-starter .final-cta{
   body.page-package-starter .section-intro,
   body.page-package-starter .empathy-lead,
   body.page-package-starter .empathy-sub,
-  body.page-package-starter .trust-proof,
   body.page-package-starter .final-cta p{
     font-size:16px;
     font-weight:500;
@@ -499,22 +486,8 @@ body.page-package-starter .final-cta{
     max-width:none;
   }
   body.page-package-starter .empathy-title{font-size:28px;}
-  body.page-package-starter .trust-proof,
   body.page-package-starter .final-cta p{
     white-space:nowrap;
-  }
-
-  body.page-package-starter .trust-text{
-    font-size:16px;
-    font-weight:700;
-    line-height:1.5;
-  }
-  body.page-package-starter .trust-item{
-    gap:12px;
-  }
-  body.page-package-starter .trust-callout{
-    font-size:16px;
-    padding:14px 20px;
   }
 
   body.page-package-starter .showcase-panel{
