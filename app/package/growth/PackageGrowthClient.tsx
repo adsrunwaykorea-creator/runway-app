@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { PackageHeader } from "@/components/site/PackageHeader";
 import { StaticHtmlLoader } from "@/components/site/StaticHtmlLoader";
 import { normalizeMarketingHtml } from "@/lib/marketingHtmlNormalize";
 
@@ -13,9 +14,12 @@ export default function PackageGrowthClient() {
   }, []);
 
   return (
-    <StaticHtmlLoader
-      src="/html/package-growth.html?v=lead04"
-      normalizeHtml={normalizeMarketingHtml}
-    />
+    <>
+      <PackageHeader active="growth" />
+      <StaticHtmlLoader
+        src="/html/package-growth.html?v=lead12"
+        normalizeHtml={normalizeMarketingHtml}
+      />
+    </>
   );
 }
