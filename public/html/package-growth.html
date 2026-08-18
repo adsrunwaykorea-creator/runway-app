@@ -9,8 +9,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
-<link rel="stylesheet" href="/html/package-starter-blueprint.css?v=nav01">
-<link rel="stylesheet" href="/html/package-growth-blueprint.css?v=nav01">
+<link rel="stylesheet" href="/html/package-starter-blueprint.css?v=lead04">
+<link rel="stylesheet" href="/html/package-growth-blueprint.css?v=lead03">
 </head>
 <body class="page-package-growth">
 
@@ -1066,19 +1066,7 @@
           </div>
           <label>상호명 *<input type="text" name="business_name" id="growth-company" required placeholder="예: OO네일 / OO헤어"></label>
           <div class="bp-form-row">
-            <label>업종 *
-              <select name="business_type" id="growth-industry" required>
-                <option value="">선택해주세요</option>
-                <option value="뷰티/헤어">뷰티/헤어</option>
-                <option value="네일/속눈썹">네일/속눈썹</option>
-                <option value="피부/에스테틱">피부/에스테틱</option>
-                <option value="의료/건강">의료/건강</option>
-                <option value="교육/학원">교육/학원</option>
-                <option value="카페/음식">카페/음식</option>
-                <option value="기타">기타</option>
-              </select>
-              <input type="text" class="industry-other" id="growth-industry-other" name="business_type_other" placeholder="업종을 직접 입력해주세요">
-            </label>
+            <label>업종 *<input type="text" name="business_type" id="growth-industry" required placeholder="예: 미용실, 카페, 학원, 쇼핑몰"></label>
             <label>사업장 지역 *<input type="text" name="business_region" id="growth-region" required placeholder="예: 서울 마포구 / 경기 김포시"></label>
           </div>
           <fieldset class="situation-field">
@@ -1103,13 +1091,26 @@
             </div>
           </fieldset>
           <label class="bp-check"><input type="checkbox" id="growth-privacy" required> 개인정보 수집 및 이용에 동의합니다 *</label>
-          <button type="submit" class="btn-primary" id="growthSubmitButton">무료 사업 성장 상담 신청하기 →</button>
+          <button type="submit" class="btn-primary" id="growthSubmitButton">
+            <span id="growthSubmitButtonText">무료 사업 성장 상담 신청하기 →</span>
+          </button>
           <div class="detail-form-feedback" id="growthFormFeedback" style="display:none" aria-live="polite"></div>
         </form>
-        <div class="form-success-message" id="growthFormSuccess" style="display:none">
-          <h3>상담 신청이 접수되었습니다</h3>
-          <p>남겨주신 내용을 확인한 뒤 빠르게 연락드리겠습니다.</p>
+      </div>
+    </div>
+    <div class="consult-success" id="growthFormSuccess" hidden aria-live="polite">
+      <div class="consult-success-card">
+        <div class="consult-success-icon" aria-hidden="true">
+          <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="28" cy="28" r="23" stroke="currentColor" stroke-width="2"/>
+            <path d="M18.5 28.5L24.8 34.8L37.5 21.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </div>
+        <h3 class="consult-success-title">상담 신청이 완료되었습니다</h3>
+        <p class="consult-success-lead">24시간 내 담당자가 확인 후 연락드리겠습니다.</p>
+        <p class="consult-success-copy">입력해주신 내용을 확인한 뒤<br>사업 상황에 맞는 상담을 안내드리겠습니다.</p>
+        <p class="consult-success-phone">급한 문의는 <a href="tel:01077539765">010-7753-9765</a>로 연락해주세요.</p>
+        <button type="button" class="consult-success-btn js-consult-success-top">패키지 다시 보기 →</button>
       </div>
     </div>
   </div>
@@ -1241,60 +1242,8 @@
 
   var phone = document.getElementById('growth-phone');
   if (phone) phone.addEventListener('input', formatPhone);
-
-  var industry = document.getElementById('growth-industry');
-  var industryOther = document.getElementById('growth-industry-other');
-  if (industry && industryOther) {
-    industry.addEventListener('change', function () {
-      var isOther = industry.value === '기타';
-      industryOther.classList.toggle('is-open', isOther);
-      industryOther.required = isOther;
-      if (!isOther) industryOther.value = '';
-    });
-  }
-
-  var form = document.getElementById('growthContactForm');
-  var success = document.getElementById('growthFormSuccess');
-  var feedback = document.getElementById('growthFormFeedback');
-
-  if (form) {
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-
-      var name = document.getElementById('growth-name').value.trim();
-      var phoneVal = document.getElementById('growth-phone').value.trim();
-      var company = document.getElementById('growth-company').value.trim();
-      var type = document.getElementById('growth-industry').value.trim();
-      var typeOther = industryOther ? industryOther.value.trim() : '';
-      var region = document.getElementById('growth-region').value.trim();
-      var status = (form.querySelector('input[name="marketing_status"]:checked') || {}).value || '';
-      var privacy = document.getElementById('growth-privacy');
-
-      if (!name || !phoneVal || !company || !type || !region || !status) {
-        alert('필수 항목을 모두 입력해 주세요.');
-        return;
-      }
-      if (type === '기타' && !typeOther) {
-        alert('업종을 직접 입력해 주세요.');
-        industryOther && industryOther.focus();
-        return;
-      }
-      if (!privacy || !privacy.checked) {
-        alert('개인정보 수집 및 이용에 동의해 주세요.');
-        return;
-      }
-      if (phoneVal.replace(/[^0-9]/g, '').length < 10) {
-        alert('전화번호를 올바르게 입력해 주세요.');
-        return;
-      }
-
-      // Frontend-only validation stage (no backend submit yet)
-      form.style.display = 'none';
-      if (success) success.style.display = 'block';
-      if (feedback) feedback.style.display = 'none';
-    });
-  }
 })();
 </script>
+<script src="/html/js/contact-lead.js?v=lead03"></script>
 </body>
 </html>

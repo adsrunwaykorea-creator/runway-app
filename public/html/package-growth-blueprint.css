@@ -3329,9 +3329,6 @@ body.page-package-growth .bp-contact .section-tag{
   margin-bottom:12px;
 }
 
-/* Growth form extras */
-.industry-other{display:none; margin-top:8px;}
-.industry-other.is-open{display:block;}
 .form-success-message{
   background:#fff;
   border:1px solid var(--line);
