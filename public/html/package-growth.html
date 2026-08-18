@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
-<link rel="stylesheet" href="/html/package-starter-blueprint.css?v=nav01">
+<link rel="stylesheet" href="/html/package-starter-blueprint.css?v=lead01">
 <link rel="stylesheet" href="/html/package-growth-blueprint.css?v=nav01">
 </head>
 <body class="page-package-growth">
@@ -1103,12 +1103,13 @@
             </div>
           </fieldset>
           <label class="bp-check"><input type="checkbox" id="growth-privacy" required> 개인정보 수집 및 이용에 동의합니다 *</label>
-          <button type="submit" class="btn-primary" id="growthSubmitButton">무료 사업 성장 상담 신청하기 →</button>
+          <button type="submit" class="btn-primary" id="growthSubmitButton">
+            <span id="growthSubmitButtonText">무료 사업 성장 상담 신청하기 →</span>
+          </button>
           <div class="detail-form-feedback" id="growthFormFeedback" style="display:none" aria-live="polite"></div>
         </form>
         <div class="form-success-message" id="growthFormSuccess" style="display:none">
-          <h3>상담 신청이 접수되었습니다</h3>
-          <p>남겨주신 내용을 확인한 뒤 빠르게 연락드리겠습니다.</p>
+          <h3>상담 신청이 완료되었습니다. 빠르게 연락드리겠습니다.</h3>
         </div>
       </div>
     </div>
@@ -1252,49 +1253,8 @@
       if (!isOther) industryOther.value = '';
     });
   }
-
-  var form = document.getElementById('growthContactForm');
-  var success = document.getElementById('growthFormSuccess');
-  var feedback = document.getElementById('growthFormFeedback');
-
-  if (form) {
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-
-      var name = document.getElementById('growth-name').value.trim();
-      var phoneVal = document.getElementById('growth-phone').value.trim();
-      var company = document.getElementById('growth-company').value.trim();
-      var type = document.getElementById('growth-industry').value.trim();
-      var typeOther = industryOther ? industryOther.value.trim() : '';
-      var region = document.getElementById('growth-region').value.trim();
-      var status = (form.querySelector('input[name="marketing_status"]:checked') || {}).value || '';
-      var privacy = document.getElementById('growth-privacy');
-
-      if (!name || !phoneVal || !company || !type || !region || !status) {
-        alert('필수 항목을 모두 입력해 주세요.');
-        return;
-      }
-      if (type === '기타' && !typeOther) {
-        alert('업종을 직접 입력해 주세요.');
-        industryOther && industryOther.focus();
-        return;
-      }
-      if (!privacy || !privacy.checked) {
-        alert('개인정보 수집 및 이용에 동의해 주세요.');
-        return;
-      }
-      if (phoneVal.replace(/[^0-9]/g, '').length < 10) {
-        alert('전화번호를 올바르게 입력해 주세요.');
-        return;
-      }
-
-      // Frontend-only validation stage (no backend submit yet)
-      form.style.display = 'none';
-      if (success) success.style.display = 'block';
-      if (feedback) feedback.style.display = 'none';
-    });
-  }
 })();
 </script>
+<script src="/html/js/contact-lead.js?v=lead01"></script>
 </body>
 </html>

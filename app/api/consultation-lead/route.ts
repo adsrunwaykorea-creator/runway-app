@@ -1,26 +1,41 @@
 import { NextResponse } from "next/server";
 import { isMissingTableError } from "@/lib/consultation-leads-errors";
 import { getSupabaseLeadClient } from "@/lib/supabase/server";
+
+const SAVE_ERROR_MESSAGE = "상담 신청 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+const SUCCESS_MESSAGE = "상담 신청이 완료되었습니다. 빠르게 연락드리겠습니다.";
+
 type Body = {
   source?: unknown;
   sessionKey?: unknown;
   businessType?: unknown;
+  business_type?: unknown;
+  industry?: unknown;
   region?: unknown;
+  business_region?: unknown;
+  businessRegion?: unknown;
   monthlyBudget?: unknown;
   adBudget?: unknown;
   goal?: unknown;
+  current_status?: unknown;
+  currentStatus?: unknown;
   message?: unknown;
   adChannel?: unknown;
   contact?: unknown;
   name?: unknown;
   company?: unknown;
   companyName?: unknown;
+  company_name?: unknown;
   phone?: unknown;
   serviceType?: unknown;
+  service_type?: unknown;
+  packageType?: unknown;
+  package_type?: unknown;
   privacyConsent?: unknown;
   privacyAgreed?: unknown;
-  createdAt?: unknown;
+  privacy_agreed?: unknown;
   pageSource?: unknown;
+  page_source?: unknown;
   referrer?: unknown;
   utmSource?: unknown;
   utmMedium?: unknown;
@@ -32,11 +47,30 @@ function str(v: unknown): string {
   return typeof v === "string" ? v.trim() : "";
 }
 
+function pickStr(...values: unknown[]): string {
+  for (const value of values) {
+    const next = str(value);
+    if (next) return next;
+  }
+  return "";
+}
+
 function payloadRecord(body: Body): Record<string, unknown> | null {
   if (body.payload && typeof body.payload === "object" && body.payload !== null) {
     return body.payload as Record<string, unknown>;
   }
   return null;
+}
+
+function normalizeServiceType(value: string): string | null {
+  const lowered = value.toLowerCase();
+  if (lowered === "starter" || lowered.includes("/package/starter")) return "starter";
+  if (lowered === "growth" || lowered.includes("/package/growth")) return "growth";
+  return value || null;
+}
+
+function isTruthy(value: unknown): boolean {
+  return value === true || value === "true" || value === 1 || value === "1";
 }
 
 export async function POST(request: Request) {
@@ -48,32 +82,73 @@ export async function POST(request: Request) {
     console.log("[consultation-lead] request body keys", Object.keys(body));
   } catch (error) {
     console.error("[consultation-lead] invalid JSON body", error);
-    return NextResponse.json(
-      { success: false, message: "요청 형식이 올바르지 않습니다." },
-      { status: 400 },
-    );
-  }
-
-  const source = str(body.source);
-  if (source !== "contact_us" && source !== "chatbot") {
-    console.error("[consultation-lead] invalid source", source);
-    return NextResponse.json(
-      { success: false, message: "source 값이 올바르지 않습니다. (contact_us | chatbot)" },
-      { status: 400 },
-    );
+    return NextResponse.json({ success: false, message: SAVE_ERROR_MESSAGE }, { status: 400 });
   }
 
   const extra = payloadRecord(body);
-  const name = str(body.name);
-  const company = str(body.company) || str(body.companyName);
-  const phone = str(body.phone);
-  const message = str(body.message) || str(extra?.message);
-  const adBudget = str(body.adBudget) || str(body.monthlyBudget) || str(extra?.adBudget);
+  const source = pickStr(body.source, extra?.source) || "contact_us";
+  if (source !== "contact_us" && source !== "chatbot") {
+    console.error("[consultation-lead] invalid source", source);
+    return NextResponse.json({ success: false, message: SAVE_ERROR_MESSAGE }, { status: 400 });
+  }
+
+  const name = pickStr(body.name, extra?.name);
+  const company = pickStr(
+    body.company,
+    body.companyName,
+    body.company_name,
+    extra?.company,
+    extra?.companyName,
+    extra?.company_name,
+    extra?.business_name,
+  );
+  const phone = pickStr(body.phone, extra?.phone);
+  const businessType = pickStr(
+    body.businessType,
+    body.business_type,
+    body.industry,
+    extra?.businessType,
+    extra?.business_type,
+    extra?.industry,
+  );
+  const region = pickStr(
+    body.region,
+    body.business_region,
+    body.businessRegion,
+    extra?.region,
+    extra?.business_region,
+    extra?.businessRegion,
+  );
+  const currentStatus = pickStr(
+    body.current_status,
+    body.currentStatus,
+    extra?.current_status,
+    extra?.currentStatus,
+    extra?.marketing_status,
+    body.goal,
+    extra?.goal,
+    extra?.message,
+    body.message,
+  );
+  const serviceType = normalizeServiceType(
+    pickStr(
+      body.packageType,
+      body.package_type,
+      body.serviceType,
+      body.service_type,
+      extra?.package_type,
+      extra?.packageType,
+      extra?.service_type,
+      extra?.serviceType,
+    ),
+  );
   const privacyAgreed =
-    body.privacyAgreed === true ||
-    body.privacyConsent === true ||
-    extra?.privacyAgreed === true ||
-    extra?.privacyConsent === true;
+    isTruthy(body.privacyAgreed) ||
+    isTruthy(body.privacy_agreed) ||
+    isTruthy(body.privacyConsent) ||
+    isTruthy(extra?.privacyAgreed) ||
+    isTruthy(extra?.privacy_agreed) ||
+    isTruthy(extra?.privacyConsent);
 
   if (source === "contact_us" && !privacyAgreed) {
     console.error("[consultation-lead] privacy consent missing for contact_us");
@@ -82,22 +157,6 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
-
-  const sessionKey = str(body.sessionKey) || `${source}-${crypto.randomUUID()}`;
-  const businessType = str(body.businessType) || "일반 상담";
-  const region = str(body.region) || "미입력";
-  const monthlyBudget = adBudget || str(body.monthlyBudget) || "미입력";
-  const goal = message || str(body.goal) || "상담 문의";
-  const contact = str(body.contact) || [name, phone].filter(Boolean).join(" / ");
-  const createdAt = str(body.createdAt) || new Date().toISOString();
-  const pageSource =
-    str(body.pageSource) || str(extra?.source) || str(extra?.pageSource) || "runwayads.kr";
-  const referrer = str(body.referrer) || str(extra?.referrer) || null;
-  const utmSource = str(body.utmSource) || str(extra?.utm_source) || str(extra?.utmSource) || null;
-  const utmMedium = str(body.utmMedium) || str(extra?.utm_medium) || str(extra?.utmMedium) || null;
-  const utmCampaign =
-    str(body.utmCampaign) || str(extra?.utm_campaign) || str(extra?.utmCampaign) || null;
-  const adChannel = str(body.adChannel) || null;
 
   if (source === "contact_us" && (!name || !phone || !company || !businessType)) {
     console.error("[consultation-lead] missing required contact fields", {
@@ -112,79 +171,81 @@ export async function POST(request: Request) {
     );
   }
 
+  const sessionKey = pickStr(body.sessionKey, extra?.sessionKey) || `${source}-${crypto.randomUUID()}`;
+  const contact = pickStr(body.contact, extra?.contact) || [name, phone].filter(Boolean).join(" / ");
+  const pageSource = pickStr(
+    body.pageSource,
+    body.page_source,
+    extra?.pageSource,
+    extra?.page_source,
+  );
+  const referrer = pickStr(body.referrer, extra?.referrer) || null;
+  const utmSource = pickStr(body.utmSource, extra?.utm_source, extra?.utmSource) || null;
+  const utmMedium = pickStr(body.utmMedium, extra?.utm_medium, extra?.utmMedium) || null;
+  const utmCampaign = pickStr(body.utmCampaign, extra?.utm_campaign, extra?.utmCampaign) || null;
+  const monthlyBudget = pickStr(body.monthlyBudget, body.adBudget, extra?.monthlyBudget, extra?.adBudget);
+  const adChannel = pickStr(body.adChannel, extra?.adChannel) || null;
+  const message = pickStr(body.message, extra?.message) || null;
+  const goal = currentStatus || "상담 문의";
+
   if (!contact) {
-    return NextResponse.json(
-      { success: false, message: "필수 항목을 모두 입력해 주세요." },
-      { status: 400 },
-    );
+    return NextResponse.json({ success: false, message: SAVE_ERROR_MESSAGE }, { status: 400 });
   }
 
   const rawPayload = {
     ...(extra ?? {}),
-    source: pageSource,
-    pageSource,
-    privacyConsent: privacyAgreed,
-    privacyAgreed,
-    createdAt,
+    name: name || null,
+    phone: phone || null,
+    company: company || null,
+    industry: businessType || null,
+    region: region || null,
+    current_status: currentStatus || null,
+    package_type: serviceType,
+    source: "contact_us",
+    page_source: pageSource || null,
+    privacy_agreed: privacyAgreed,
     referrer,
     utm_source: utmSource,
     utm_medium: utmMedium,
     utm_campaign: utmCampaign,
-    name: name || null,
-    companyName: company || null,
-    phone: phone || null,
-    businessType,
-    adBudget: monthlyBudget,
-    adChannel,
-    message: message || null,
-    serviceType: null,
   };
+
+  const row: Record<string, unknown> = {
+    source,
+    session_key: sessionKey,
+    lead_name: name || null,
+    company: company || null,
+    phone: phone || null,
+    business_type: businessType || "일반 상담",
+    region: region || "미입력",
+    goal,
+    service_type: serviceType,
+    privacy_agreed: privacyAgreed,
+    page_source: pageSource || null,
+    raw_payload: rawPayload,
+    contact,
+  };
+
+  if (referrer) row.referrer = referrer;
+  if (utmSource) row.utm_source = utmSource;
+  if (utmMedium) row.utm_medium = utmMedium;
+  if (utmCampaign) row.utm_campaign = utmCampaign;
+  row.monthly_budget = monthlyBudget || "미입력";
+  if (message) row.message = message;
+  if (adChannel) row.ad_channel = adChannel;
 
   try {
     const supabase = getSupabaseLeadClient();
-    const row = {
-      source,
-      session_key: sessionKey,
-      business_type: businessType,
-      region,
-      monthly_budget: monthlyBudget,
-      goal,
-      contact,
-      lead_name: name || null,
-      company: company || null,
-      company_name: company || null,
-      phone: phone || null,
-      service_type: null,
-      ad_channel: adChannel,
-      message: message || goal || null,
-      privacy_agreed: privacyAgreed,
-      page_source: pageSource,
-      referrer,
-      utm_source: utmSource,
-      utm_medium: utmMedium,
-      utm_campaign: utmCampaign,
-      status: "신규",
-      admin_memo: null,
-      raw_payload: rawPayload,
-    };
-
     console.log("[consultation-lead] inserting row", {
       source: row.source,
-      session_key: row.session_key,
-      business_type: row.business_type,
+      service_type: row.service_type,
+      keys: Object.keys(row),
     });
 
-    let { error } = await supabase.from("consultation_leads").insert(row);
+    const { error } = await supabase.from("consultation_leads").insert(row);
 
-    if (error?.code === "42703" && error.message?.includes("company_name")) {
-      const legacyRow = {
-        ...row,
-      };
-      delete (legacyRow as Record<string, unknown>).company_name;
-      ({ error } = await supabase.from("consultation_leads").insert(legacyRow));
-    }
-
-    if (error) {      console.error("[consultation-lead] insert consultation_leads failed", {
+    if (error) {
+      console.error("[consultation-lead] insert consultation_leads failed", {
         table: "consultation_leads",
         code: error.code,
         message: error.message,
@@ -193,7 +254,7 @@ export async function POST(request: Request) {
       });
       const message = isMissingTableError(error.code)
         ? "상담 신청 DB가 아직 설정되지 않았습니다. 관리자에게 문의해 주세요."
-        : "저장 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+        : SAVE_ERROR_MESSAGE;
       return NextResponse.json({ success: false, message }, { status: 500 });
     }
   } catch (e) {
@@ -203,20 +264,13 @@ export async function POST(request: Request) {
       message: err.message,
       stack: err.stack,
     });
-    return NextResponse.json(
-      {
-        success: false,
-        message:
-          "서버 설정을 확인해 주세요. (NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY 또는 NEXT_PUBLIC_SUPABASE_ANON_KEY)",
-      },
-      { status: 503 },
-    );
+    return NextResponse.json({ success: false, message: SAVE_ERROR_MESSAGE }, { status: 503 });
   }
 
-  console.log("[consultation-lead] insert success", { sessionKey });
+  console.log("[consultation-lead] insert success", { sessionKey, serviceType });
 
   return NextResponse.json({
     success: true,
-    message: "상담 신청이 완료되었습니다. 빠르게 연락드리겠습니다.",
+    message: SUCCESS_MESSAGE,
   });
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import PackageStarterClient from "./PackageStarterClient";
 
-const EMPATHY_VIDEO_SRC = "/html/assets/blueprint-starter/empathy-fast.mp4?v=fast1";
+const EMPATHY_VIDEO_SRC = "/html/assets/blueprint-starter/empathy-web.mp4?v=web1";
 
 export const metadata: Metadata = {
   title: "초보 창업 패키지 | 1주일 완성 마케팅 세팅 - RUNWAY",
