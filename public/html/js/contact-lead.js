@@ -101,6 +101,35 @@
     event.target.value = value;
   }
 
+  function bindConsultSuccessTop(root) {
+    const scope = root || document;
+    scope.querySelectorAll(".js-consult-success-top").forEach((btn) => {
+      if (btn.dataset.bound === "1") return;
+      btn.dataset.bound = "1";
+      btn.addEventListener("click", function () {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    });
+  }
+
+  function showPackageConsultSuccess(form, successEl) {
+    const section = form && form.closest(".bp-contact");
+    if (section) {
+      section.classList.add("is-success");
+      const grid = section.querySelector(".bp-contact-grid");
+      if (grid) grid.setAttribute("aria-hidden", "true");
+    }
+    if (successEl) {
+      successEl.hidden = false;
+      successEl.removeAttribute("hidden");
+      successEl.style.display = "";
+    }
+    bindConsultSuccessTop(successEl || section || document);
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
+
   function initContactDetailForm(options) {
     const config = options || {};
     const submitButtonText = config.submitButtonText || "상담신청";
@@ -245,12 +274,7 @@
         await submitLead(payload);
         form.reset();
         setDetailSubmitStatus("idle");
-        form.style.display = "none";
-        if (successEl) {
-          const heading = successEl.querySelector("h3");
-          if (heading) heading.textContent = MSG_SUCCESS;
-          successEl.style.display = "block";
-        }
+        showPackageConsultSuccess(form, successEl);
       } catch (error) {
         console.error("[contactDetailForm] lead submit failed:", error);
         setDetailSubmitStatus("error");
@@ -512,12 +536,7 @@
         });
         form.reset();
         setStatus("idle");
-        form.style.display = "none";
-        if (successEl) {
-          const heading = successEl.querySelector("h3");
-          if (heading) heading.textContent = MSG_SUCCESS;
-          successEl.style.display = "block";
-        }
+        showPackageConsultSuccess(form, successEl);
       } catch (error) {
         console.error("[growthContactForm] lead submit failed:", error);
         setStatus("error");
@@ -542,6 +561,7 @@
     if (!hasDetail && !hasModal && !hasGrowth) return;
 
     window.__runwayContactLeadBootstrapped = true;
+    bindConsultSuccessTop(document);
     initContactModalForm();
 
     const btnText = document.getElementById("detailSubmitButtonText")?.textContent?.trim();

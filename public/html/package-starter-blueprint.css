@@ -459,6 +459,101 @@ body.page-package-starter .final-cta{
 /* Contact + footer */
 .bp-contact{background:var(--off); padding:88px 0;}
 .bp-contact-grid{display:grid; grid-template-columns:0.9fr 1.2fr; gap:28px; margin-top:36px; text-align:left;}
+.consult-success{display:none;}
+.bp-contact.is-success,
+body.page-package-growth .bp-contact.is-success{
+  padding:40px 0 48px;
+}
+.bp-contact.is-success .section-tag,
+.bp-contact.is-success .wrap > h2,
+.bp-contact.is-success .section-intro,
+.bp-contact.is-success .bp-contact-grid{
+  display:none;
+}
+.bp-contact.is-success .consult-success{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  max-width:640px;
+  width:100%;
+  margin:0 auto;
+}
+.consult-success-card{
+  width:100%;
+  background:#fff;
+  border:1px solid #E4E7EC;
+  border-radius:18px;
+  padding:52px 48px;
+  text-align:center;
+  box-shadow:0 10px 28px rgba(18,44,82,0.06);
+}
+.consult-success-icon{
+  width:56px;
+  height:56px;
+  margin:0 auto 20px;
+  color:var(--annot);
+}
+.consult-success-icon svg{width:100%; height:100%; display:block;}
+.consult-success-title{
+  font-family:'Archivo',sans-serif;
+  font-weight:800;
+  font-size:clamp(22px, 2.4vw, 28px);
+  color:var(--blue-deep);
+  letter-spacing:-.02em;
+  line-height:1.3;
+  margin:0 0 12px;
+  max-width:none;
+}
+.consult-success-lead{
+  font-size:16px;
+  font-weight:600;
+  color:var(--navy-text);
+  line-height:1.6;
+  margin:0 0 10px;
+}
+.consult-success-copy{
+  font-size:14.5px;
+  font-weight:500;
+  color:var(--slate);
+  line-height:1.7;
+  margin:0 0 22px;
+}
+.consult-success-phone{
+  font-size:13.5px;
+  font-weight:500;
+  color:var(--slate);
+  line-height:1.6;
+  margin:0;
+}
+.consult-success-phone a{
+  color:var(--blue-deep);
+  font-weight:700;
+}
+.consult-success-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  margin-top:20px;
+  background:var(--annot);
+  color:#fff;
+  font:inherit;
+  font-weight:700;
+  font-size:15px;
+  padding:14px 24px;
+  border:0;
+  border-radius:8px;
+  cursor:pointer;
+}
+@media(max-width:768px){
+  .bp-contact.is-success,
+  body.page-package-growth .bp-contact.is-success{
+    padding:32px 0 40px;
+  }
+  .consult-success-card{
+    padding:32px 24px;
+    border-radius:16px;
+  }
+}
 .bp-info-card{background:#fff; border:1px solid var(--line); border-radius:var(--radius); padding:24px;}
 .bp-info-card h3{font-family:'Archivo',sans-serif; font-size:18px; margin-bottom:16px;}
 .bp-info-card p{font-size:13.5px; color:var(--slate); margin-bottom:14px; line-height:1.7;}
