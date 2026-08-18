@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import PackageStarterClient from "./PackageStarterClient";
 
+const EMPATHY_VIDEO_SRC = "/html/assets/blueprint-starter/empathy-fast.mp4?v=fast1";
+
 export const metadata: Metadata = {
   title: "초보 창업 패키지 | 1주일 완성 마케팅 세팅 - RUNWAY",
   description:
@@ -8,5 +10,16 @@ export const metadata: Metadata = {
 };
 
 export default function PackageStarterPage() {
-  return <PackageStarterClient />;
+  return (
+    <>
+      <link
+        rel="preload"
+        href={EMPATHY_VIDEO_SRC}
+        as="video"
+        type="video/mp4"
+        fetchPriority="high"
+      />
+      <PackageStarterClient />
+    </>
+  );
 }

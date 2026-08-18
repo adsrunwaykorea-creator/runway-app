@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
-<link rel="stylesheet" href="/html/package-starter-blueprint.css?v=empathy01">
+<link rel="stylesheet" href="/html/package-starter-blueprint.css?v=empathy03">
 </head>
 <body class="page-package-starter">
 
@@ -63,7 +63,7 @@
       <figure class="empathy-media">
         <video
           class="empathy-video"
-          src="/html/assets/blueprint-starter/empathy.mp4?v=2"
+          src="/html/assets/blueprint-starter/empathy-fast.mp4?v=fast1"
           autoplay
           muted
           loop
@@ -392,16 +392,6 @@
 
 <script src="/html/js/contact-lead.js"></script>
 <script>
-(function(){
-  var video = document.querySelector('.empathy-video');
-  if (!video) return;
-  var reveal = function(){ video.classList.add('is-ready'); };
-  if (video.readyState >= 2) reveal();
-  else {
-    video.addEventListener('loadeddata', reveal, { once: true });
-    video.addEventListener('canplay', reveal, { once: true });
-  }
-})();
 document.querySelectorAll('.faq-q').forEach(btn=>{
   btn.addEventListener('click',()=>{
     const item=btn.parentElement, ans=item.querySelector('.faq-a'), open=item.classList.contains('open');

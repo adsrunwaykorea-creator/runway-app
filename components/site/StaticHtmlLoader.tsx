@@ -25,8 +25,9 @@ export function StaticHtmlLoader({ src, normalizeHtml }: Props) {
     const injectLink = (link: HTMLLinkElement): Promise<void> => {
       const href = link.getAttribute("href");
       if (!href) return Promise.resolve();
-      const exists = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).some(
-        (l) => l.getAttribute("href") === href,
+      const rel = link.getAttribute("rel") || "stylesheet";
+      const exists = Array.from(document.querySelectorAll("link[href]")).some(
+        (l) => l.getAttribute("href") === href && l.getAttribute("rel") === rel,
       );
       if (exists) return Promise.resolve();
 
@@ -39,13 +40,23 @@ export function StaticHtmlLoader({ src, normalizeHtml }: Props) {
           done();
         };
 
-      const clone = document.createElement("link");
-      clone.rel = "stylesheet";
-      clone.href = href;
-      clone.setAttribute("data-runway-injected", "1");
-        clone.addEventListener("load", clearAndResolve, { once: true });
-        clone.addEventListener("error", clearAndResolve, { once: true });
-      document.head.appendChild(clone);
+        const clone = document.createElement("link");
+        clone.rel = rel;
+        clone.href = href;
+        const as = link.getAttribute("as");
+        if (as) clone.setAttribute("as", as);
+        const type = link.getAttribute("type");
+        if (type) clone.type = type;
+        const fetchPriority = link.getAttribute("fetchpriority");
+        if (fetchPriority) clone.setAttribute("fetchpriority", fetchPriority);
+        clone.setAttribute("data-runway-injected", "1");
+        if (rel === "stylesheet") {
+          clone.addEventListener("load", clearAndResolve, { once: true });
+          clone.addEventListener("error", clearAndResolve, { once: true });
+        } else {
+          clearAndResolve();
+        }
+        document.head.appendChild(clone);
       });
     };
 
@@ -62,7 +73,7 @@ export function StaticHtmlLoader({ src, normalizeHtml }: Props) {
         const doc = parser.parseFromString(raw, "text/html");
 
         const styleLoadPromises = Array.from(
-          doc.querySelectorAll("head link[rel='stylesheet']"),
+          doc.querySelectorAll("head link[rel='stylesheet'], head link[rel='preload']"),
         ).map((n) => injectLink(n as HTMLLinkElement));
         await Promise.all(styleLoadPromises);
         if (cancelled) return;
