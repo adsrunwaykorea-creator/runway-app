@@ -1854,7 +1854,7 @@ body.page-package-growth .hero-growth .wrap{
 /* Growth Team — 01~05 summary */
 .growth-team{
   background:var(--off);
-  padding:clamp(100px,10vw,120px) 0 40px;
+  padding:clamp(100px,10vw,120px) 0 28px;
 }
 body.page-package-growth .growth-team .wrap{
   max-width:1340px;
@@ -2153,7 +2153,7 @@ body.page-package-growth .growth-team .wrap{
 }
 
 @media(max-width:960px){
-  .growth-team{padding:72px 0 32px;}
+  .growth-team{padding:72px 0 24px;}
   .growth-team .wrap{
     display:flex;
     flex-direction:column;
@@ -2223,7 +2223,7 @@ body.page-package-growth .growth-team .wrap{
 /* Industry Fit */
 .industry-fit{
   background:#fff;
-  padding:40px 0 clamp(100px,10vw,128px);
+  padding:32px 0 clamp(100px,10vw,128px);
 }
 body.page-package-growth .industry-fit .wrap{
   max-width:1340px;
@@ -2491,7 +2491,7 @@ body.page-package-growth .industry-fit .wrap{
   .industry-fit .if-desc-line{white-space:normal;}
 }
 @media(max-width:700px){
-  .industry-fit{padding:48px 0 80px;}
+  .industry-fit{padding:32px 0 80px;}
   .industry-fit .if-head{margin-bottom:22px;}
   .industry-fit .if-grid{
     grid-template-columns:repeat(2, minmax(0, 1fr));
