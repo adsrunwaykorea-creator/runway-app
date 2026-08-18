@@ -118,7 +118,7 @@ export function LegalFooter() {
         </li>
       </ul>
       <p className="mt-4">
-        <Link href="/" className="font-semibold text-blue-700 underline">
+        <Link href="/package/starter" className="font-semibold text-blue-700 underline">
           홈으로 돌아가기
         </Link>
       </p>

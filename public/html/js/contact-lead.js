@@ -176,17 +176,16 @@
       const phone = document.getElementById("detail-phone")?.value?.trim() || "";
       const company = document.getElementById("detail-company")?.value?.trim() || "";
       const businessType = document.getElementById("detail-industry")?.value?.trim() || "";
-      const message = document.getElementById("detail-message")?.value?.trim() || "";
+      const region = document.getElementById("detail-region")?.value?.trim() || "";
+      const message =
+        form.querySelector('input[name="detail-situation"]:checked')?.value?.trim() ||
+        document.getElementById("detail-message")?.value?.trim() ||
+        "";
       const createdAt = new Date().toISOString();
       const tracking = getTrackingContext(pageSource);
 
-      if (!name || !phone || !businessType) {
-        alert("이름, 연락처, 업종은 필수 항목입니다.");
-        return;
-      }
-
-      if (!company) {
-        alert("회사명 또는 매장명을 입력해 주세요.");
+      if (!name || !phone || !company || !businessType || !region || !message) {
+        alert("이름, 전화번호, 상호명, 업종, 사업장지역, 현재 상황은 필수 항목입니다.");
         return;
       }
 
@@ -196,12 +195,12 @@
         source: "contact_us",
         sessionKey: `contact-us-detail-${Date.now()}`,
         businessType,
-        region: "미입력",
+        region,
         monthlyBudget: "미입력",
         adBudget: "미입력",
         adChannel: null,
-        goal: message || "상담 문의",
-        message: message || null,
+        goal: message,
+        message,
         contact: [name, phone].filter(Boolean).join(" / "),
         name,
         company,
@@ -229,6 +228,7 @@
           companyName: company,
           phone,
           businessType,
+          region,
           adBudget: null,
           adChannel: null,
           message,

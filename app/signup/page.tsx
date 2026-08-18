@@ -18,7 +18,7 @@ export default function SignupPage() {
             결제 안내 보기
           </Link>
           <Link
-            href="/#contact"
+            href="/package/starter#contact"
             className="flex h-11 w-full items-center justify-center rounded-[10px] border border-zinc-300 bg-white text-sm font-bold text-zinc-800 transition hover:bg-zinc-50"
           >
             광고 상담 신청

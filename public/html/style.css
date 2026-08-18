@@ -1,5 +1,5 @@
-/* 런웨이 — 공통 레이아웃 + 페이지별(@scope, 예전 <style> 블록 통합) */
-/* 런웨이 랜딩 페이지 공통 스타일 (병합 시 베이스 — merge_css.py가 이 파일을 읽음) */
+/* ??? ? ?? ???? + ????(@scope, ?? <style> ?? ??) */
+/* ??? ?? ??? ?? ??? (?? ? ??? ? merge_css.py? ? ??? ??) */
 
     * {
         margin: 0;
@@ -20,6 +20,23 @@
         --surface: #F8FAFC;
         --accent-soft: rgba(59, 130, 246, 0.08);
         --nav-height: 72px;
+
+        /* Package page rhythm (from include/process cards) */
+        --pkg-container-max: 1400px;
+        --pkg-section-pad-y: 5rem;
+        --pkg-section-pad-x: 2rem;
+        --pkg-hero-pad-y: 5.5rem;
+        --pkg-content-gap: 2.5rem;
+        --pkg-grid-gap: 1rem;
+        --pkg-label-size: 0.85rem;
+        --pkg-heading-size: 2.5rem;
+        --pkg-desc-size: 1.1rem;
+        --pkg-card-title-size: 1.05rem;
+        --pkg-card-text-size: 0.95rem;
+        --pkg-card-radius: 12px;
+        --pkg-card-padding: 1.35rem 1.4rem;
+        --pkg-card-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+        --pkg-card-border: 1px solid var(--border);
     }
 
     html {
@@ -35,12 +52,12 @@
         padding-top: var(--nav-height);
     }
 
-    /* 모바일 전용 줄바꿈(PC에서는 공간 차지 안 함) */
+    /* ??? ?? ???(PC??? ?? ?? ? ?) */
     .m-br {
         display: none;
     }
 
-    /* PC 전용 텍스트(모바일에서 숨김) */
+    /* PC ?? ???(????? ??) */
     @media (max-width: 768px) {
         .m-hide {
             display: none;
@@ -50,7 +67,7 @@
             display: block;
         }
 
-        /* 섹션 서브 텍스트: 모바일에서 가독성 */
+        /* ?? ?? ???: ????? ??? */
         .hero-description,
         .hero-bridge-lead,
         .section-description,
@@ -260,7 +277,7 @@
         align-items: center;
     }
 
-    /* 메인 히어로: CTA 2개(광고 상담 / 서비스 신청) 균형 */
+    /* ?? ???: CTA 2?(?? ?? / ??? ??) ?? */
     body.page-index .hero-cta {
         justify-content: flex-start;
     }
@@ -677,7 +694,7 @@
         }
     }
 
-    /* Contact Us Section (좌우 패딩은 공통 section과 동일: 2rem / 모바일 1.5rem) */
+    /* Contact Us Section (?? ??? ?? section? ??: 2rem / ??? 1.5rem) */
     .contact-us-section {
         background: var(--bg-light);
         padding: 8rem 2rem;
@@ -810,6 +827,69 @@
     .contact-detail-form textarea {
         resize: vertical;
         min-height: 100px;
+    }
+
+    .contact-detail-form .situation-field {
+        border: 0;
+        margin: 0;
+        padding: 0;
+        min-width: 0;
+    }
+
+    .contact-detail-form .situation-cards {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .contact-detail-form .situation-card {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.65rem;
+        margin: 0;
+        padding: 0.85rem 1rem;
+        border: 1px solid var(--border, #E4E7EC);
+        border-radius: 10px;
+        background: #fff;
+        cursor: pointer;
+        font-weight: 600;
+        transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+    }
+
+    .contact-detail-form .situation-card:hover {
+        border-color: #C9D3E2;
+        background: #FAFBFC;
+    }
+
+    .contact-detail-form .situation-card:has(input:checked) {
+        border-color: var(--accent, #FF6B4A);
+        background: rgba(255, 107, 74, 0.06);
+        box-shadow: 0 0 0 1px var(--accent, #FF6B4A);
+    }
+
+    .contact-detail-form .situation-card input {
+        width: auto;
+        margin: 0.15rem 0 0;
+        accent-color: var(--accent, #FF6B4A);
+        flex-shrink: 0;
+    }
+
+    .contact-detail-form .situation-card-text {
+        font-size: 0.92rem;
+        line-height: 1.45;
+        color: inherit;
+    }
+
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
     }
 
     .checkbox-group {
@@ -1058,12 +1138,12 @@
         }
     }
 
-/* ========== 페이지 전용 ========== */
+/* ========== ??? ?? ========== */
 
 
-/* ---- body.page-index (이전 <style>) ---- */
+/* ---- body.page-index (?? <style>) ---- */
 @scope (body.page-index) {
-    /* 메인 전용: 히어로 애니메이션·타이포 (style.css 위에 덮어씀) */
+    /* ?? ??: ??? ????????? (style.css ?? ???) */
             /* Hero Section */
             .hero {
                 padding: 108px 2rem 120px;
@@ -1179,7 +1259,7 @@
             }
 
             .hero-feature::before {
-                content: '✓';
+                content: '?';
                 width: 28px;
                 height: 28px;
                 background: var(--accent);
@@ -1397,7 +1477,7 @@
             }
 
             .service-detail-item::before {
-                content: '→';
+                content: '?';
                 color: var(--accent);
                 font-weight: 700;
                 flex-shrink: 0;
@@ -1882,7 +1962,7 @@
                 }
             }
 
-            /* Results Proof Section (좌우 패딩은 공통 section과 동일) */
+            /* Results Proof Section (?? ??? ?? section? ??) */
             .results-proof {
                 padding: 6rem 2rem;
                 background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
@@ -2621,7 +2701,7 @@
             }
 
             .fit-good h3::before {
-                content: '✓';
+                content: '?';
                 width: 40px;
                 height: 40px;
                 background: #10B981;
@@ -2634,7 +2714,7 @@
             }
 
             .fit-bad h3::before {
-                content: '✗';
+                content: '?';
                 width: 40px;
                 height: 40px;
                 background: #EF4444;
@@ -2846,7 +2926,7 @@
                     font-size: 2rem;
                 }
 
-                /* Problem 섹션: 모바일에서 메인/서브 각 2줄로 정돈 */
+                /* Problem ??: ????? ??/?? ? 2?? ?? */
                 .problem .section-title {
                     font-size: clamp(1.375rem, 4vw + 0.65rem, 1.5rem);
                     line-height: 1.35;
@@ -2874,7 +2954,7 @@
                     padding: 0 0.25rem;
                 }
 
-                /* Fit 섹션: 적합/비적합 제목 — 의미 단위 줄바꿈, 2줄 균형 */
+                /* Fit ??: ??/??? ?? ? ?? ?? ???, 2? ?? */
                 .fit-column h3 {
                     align-items: flex-start;
                     font-size: clamp(1.28rem, 4vw + 0.55rem, 1.42rem);
@@ -2919,7 +2999,7 @@
                 transform: translateY(0);
             }
 
-            /* Contact Us Section Mobile (공통: .contact-us-grid는 전역 스타일에서 처리) */
+            /* Contact Us Section Mobile (??: .contact-us-grid? ?? ????? ??) */
             @media (max-width: 768px) {
                 .contact-us-section iframe {
                     height: 250px !important;
@@ -2928,9 +3008,9 @@
 }
 
 
-/* ---- body.page-sns (이전 <style>) ---- */
+/* ---- body.page-sns (?? <style>) ---- */
 @scope (body.page-sns) {
-    /* SNS 전용: 히어로 분할·맵 등 */
+    /* SNS ??: ??? ???? ? */
             .hero-container-split {
                 max-width: 1400px;
                 margin: 0 auto;
@@ -3015,7 +3095,7 @@
             }
 
             @media (max-width: 768px) {
-                /* 히어로: 모바일 폭 안에 고정 (grid min-width / padding / nowrap strong 대응) */
+                /* ???: ??? ? ?? ?? (grid min-width / padding / nowrap strong ??) */
                 .hero {
                     box-sizing: border-box;
                 }
@@ -3151,7 +3231,7 @@
                 font-weight: 700;
             }
 
-            /* SNS 히어로 서브: 모바일에서 자연스러운 줄 단위(고아 줄 방지) */
+            /* SNS ??? ??: ????? ????? ? ??(?? ? ??) */
             .sns-hero-desc {
                 display: flex;
                 flex-direction: column;
@@ -3168,7 +3248,7 @@
                 flex-wrap: wrap;
             }
 
-            /* SNS: 섹션 메인 헤드라인(h2.section-title) 타이포 통일 — 769px 이상 */
+            /* SNS: ?? ?? ????(h2.section-title) ??? ?? ? 769px ?? */
             section .section-title {
                 font-size: 2.25rem;
                 font-weight: 700;
@@ -3176,7 +3256,7 @@
                 word-break: keep-all;
             }
 
-            /* 파란 배경 섹션에서 흰색으로 변경 */
+            /* ?? ?? ???? ???? ?? */
             .media-combination .section-label,
             .creative-closing .section-label,
             .benefits-closing .section-label,
@@ -3185,7 +3265,7 @@
                 color: rgba(255, 255, 255, 0.9);
             }
 
-            /* 파란 배경 섹션에서 흰색으로 변경 */
+            /* ?? ?? ???? ???? ?? */
             .media-combination .section-title,
             .creative-closing .section-title,
             .benefits-closing .section-title,
@@ -3194,7 +3274,7 @@
                 color: white;
             }
 
-            /* 파란 배경 섹션에서 흰색으로 변경 */
+            /* ?? ?? ???? ???? ?? */
             .media-combination .section-description,
             .creative-closing .section-description,
             .benefits-closing .section-description,
@@ -3288,7 +3368,7 @@
                 }
             }
 
-            /* 기존 스타일 제거용 */
+            /* ?? ??? ??? */
             .problem-insight {
                 display: none;
             }
@@ -3600,7 +3680,7 @@
                 line-height: 1.3;
             }
 
-            /* 서비스업 등: 배지·제목 가운데 정렬, 한글 단어 중간 줄바꿈 방지 */
+            /* ???? ?: ????? ??? ??, ?? ?? ?? ??? ?? */
             .industry-header--center {
                 display: flex;
                 flex-direction: column;
@@ -3691,7 +3771,7 @@
             }
 
             .industry-why-list li::before {
-                content: '✓';
+                content: '?';
                 position: absolute;
                 left: 0;
                 color: var(--accent);
@@ -3756,7 +3836,7 @@
             }
 
             .process-step::after {
-                content: '→';
+                content: '?';
                 position: absolute;
                 right: -1.5rem;
                 top: 35px;
@@ -4089,7 +4169,7 @@
                     margin: 2rem 0;
                 }
 
-                /* 카드가 세로로 쌓일 때만 화살표를 아래 방향으로 — 문단은 가로 유지 */
+                /* ??? ??? ?? ?? ???? ?? ???? ? ??? ?? ?? */
                 .creative-arrow .creative-arrow-icon {
                     transform: rotate(90deg);
                 }
@@ -4100,7 +4180,7 @@
             }
 
             @media (max-width: 768px) {
-                /* 좌우 여백: 전역 body.page-sns .creative-targeting 과 함께 사용 (style.css 하단) */
+                /* ?? ??: ?? body.page-sns .creative-targeting ? ?? ?? (style.css ??) */
                 .creative-targeting .container {
                     width: 100%;
                     max-width: 100%;
@@ -4329,13 +4409,13 @@
             }
 
             .comparison-issue p::before {
-                content: '✕';
+                content: '?';
                 background: #EF4444;
                 color: white;
             }
 
             .comparison-benefit p::before {
-                content: '✓';
+                content: '?';
                 background: var(--accent);
                 color: white;
             }
@@ -4669,7 +4749,7 @@
             }
 
             .pricing-includes li::before {
-                content: '✓';
+                content: '?';
                 width: 24px;
                 height: 24px;
                 background: var(--accent);
@@ -4744,7 +4824,7 @@
             }
 
             .faq-item.active .faq-question::after {
-                content: '−';
+                content: '?';
                 transform: rotate(180deg);
             }
 
@@ -4860,14 +4940,14 @@
                 }
             }
 
-            /* 상담 신청 폼: 공통 스타일은 전역 .contact-us-section / .contact-detail-form 참고 */
+            /* ?? ?? ?: ?? ???? ?? .contact-us-section / .contact-detail-form ?? */
 }
 
 
-/* ---- body.page-db (이전 <style>) ---- */
-/* @scope는 Safari 17.4 미만 등에서 무시될 수 있어, 네이티브 nesting으로 동일 스코프 적용 */
+/* ---- body.page-db (?? <style>) ---- */
+/* @scope? Safari 17.4 ?? ??? ??? ? ??, ???? nesting?? ?? ??? ?? */
 body.page-db {
-    /* Hero: PC는 기존 3줄(br), 모바일은 m-br + 의미 단위 문구 */
+    /* Hero: PC? ?? 3?(br), ???? m-br + ?? ?? ?? */
     .hero-headline-mobile {
         display: none;
     }
@@ -4888,7 +4968,7 @@ body.page-db {
         }
     }
 
-    /* Hero 서브: 설명 → 문제 → 해결 (3블록), 모바일 줄바꿈·해결문단 강조 */
+    /* Hero ??: ?? ? ?? ? ?? (3??), ??? ???????? ?? */
     .hero-description-db {
         display: flex;
         flex-direction: column;
@@ -5154,7 +5234,7 @@ body.page-db {
                 font-size: 1.05rem;
             }
 
-            /* db.html 전환 로직: 모바일 1열 — 상단 repeat(2)가 전역 768px에 없어 모바일에서도 좁은 2열로 남던 문제 보정 */
+            /* db.html ?? ??: ??? 1? ? ?? repeat(2)? ?? 768px? ?? ?????? ?? 2?? ?? ?? ?? */
             @media (max-width: 768px) {
                 .essence-cards {
                     display: grid;
@@ -5251,7 +5331,7 @@ body.page-db {
             }
 
             .process-step::after {
-                content: '→';
+                content: '?';
                 position: absolute;
                 right: -1.5rem;
                 top: 35px;
@@ -5327,7 +5407,7 @@ body.page-db {
             }
 
             .quality-point::before {
-                content: '✓';
+                content: '?';
                 width: 32px;
                 height: 32px;
                 background: var(--accent);
@@ -5486,13 +5566,13 @@ body.page-db {
             }
 
             .comparison-issue p::before {
-                content: '✕';
+                content: '?';
                 background: #EF4444;
                 color: white;
             }
 
             .comparison-benefit p::before {
-                content: '✓';
+                content: '?';
                 background: var(--accent);
                 color: white;
             }
@@ -5828,7 +5908,7 @@ body.page-db {
                 font-size: 0.95rem;
             }
 
-            /* db.html 운영 사례: 모바일 1열 — 상단 repeat(3) 규칙이 전역 768px보다 뒤에 있어 2~3열로 남던 문제 보정 */
+            /* db.html ?? ??: ??? 1? ? ?? repeat(3) ??? ?? 768px?? ?? ?? 2~3?? ?? ?? ?? */
             @media (max-width: 768px) {
                 .evidence-box {
                     padding: 2rem 1.25rem;
@@ -5933,7 +6013,7 @@ body.page-db {
             }
 
             .pricing-includes li::before {
-                content: '✓';
+                content: '?';
                 width: 24px;
                 height: 24px;
                 background: var(--accent);
@@ -6009,7 +6089,7 @@ body.page-db {
             }
 
             .faq-item.active .faq-question::after {
-                content: '−';
+                content: '?';
                 transform: rotate(180deg);
             }
 
@@ -6041,8 +6121,8 @@ body.page-db {
 }
 
 /* =============================================================================
-   db.html — 모바일(768px 이하) 랜딩 전면 정리
-   PC 레이아웃은 위 body.page-db 블록 유지. 이 섹션은 모바일만 오버라이드.
+   db.html ? ???(768px ??) ?? ?? ??
+   PC ????? ? body.page-db ?? ??. ? ??? ???? ?????.
    ============================================================================= */
 @media (max-width: 768px) {
     body.page-db {
@@ -6084,7 +6164,7 @@ body.page-db {
         padding-right: clamp(1.25rem, 4vw, 1.5rem);
     }
 
-    /* 전역 section(80px) 대신 DB 모바일 전용 세로 리듬 */
+    /* ?? section(80px) ?? DB ??? ?? ?? ?? */
     body.page-db section:not(.hero) {
         padding-top: 3rem;
         padding-bottom: 3rem;
@@ -6105,7 +6185,7 @@ body.page-db {
         min-width: 0;
     }
 
-    /* 메인 헤드라인 */
+    /* ?? ???? */
     body.page-db .hero h1.hero-headline-db {
         font-size: 24px;
         line-height: 1.35;
@@ -6123,7 +6203,7 @@ body.page-db {
         letter-spacing: 0.06em;
     }
 
-    /* 섹션 제목 — 전역 1.8rem 덮어씀 */
+    /* ?? ?? ? ?? 1.8rem ??? */
     body.page-db .section-title {
         font-size: 22px;
         line-height: 1.35;
@@ -6148,7 +6228,7 @@ body.page-db {
         padding-right: 0 !important;
     }
 
-    /* 카드 공통: 제목 22px / 본문 14px */
+    /* ?? ??: ?? 22px / ?? 14px */
     body.page-db .problem-box h3,
     body.page-db .solution-preview h3,
     body.page-db .key-message-box h3,
@@ -6194,7 +6274,7 @@ body.page-db {
         word-break: keep-all;
     }
 
-    /* 히어로 CTA */
+    /* ??? CTA */
     body.page-db .hero-cta {
         flex-direction: column;
         align-items: stretch;
@@ -6212,7 +6292,7 @@ body.page-db {
         border-radius: 12px;
     }
 
-    /* 문제 섹션 — 붉은 박스 */
+    /* ?? ?? ? ?? ?? */
     body.page-db .problem-structure {
         margin-top: 2rem;
         display: flex;
@@ -6298,7 +6378,7 @@ body.page-db {
         flex-shrink: 0;
     }
 
-    /* 키 메시지 박스 */
+    /* ? ??? ?? */
     body.page-db .key-message-box {
         width: 100%;
         max-width: 100%;
@@ -6320,7 +6400,7 @@ body.page-db {
         line-height: 1.6;
     }
 
-    /* 전환 로직 카드 (파란 라인) */
+    /* ?? ?? ?? (?? ??) */
     body.page-db .essence-cards {
         grid-template-columns: 1fr;
         gap: 12px;
@@ -6339,7 +6419,7 @@ body.page-db {
         margin-bottom: 0.65rem;
     }
 
-    /* 적합 업종 — 1열 */
+    /* ?? ?? ? 1? */
     body.page-db .industry-grid {
         grid-template-columns: 1fr;
         gap: 12px;
@@ -6367,7 +6447,7 @@ body.page-db {
         margin-bottom: 0.5rem;
     }
 
-    /* 프로세스 — 1열, 화살표 제거 */
+    /* ???? ? 1?, ??? ?? */
     body.page-db .process-steps {
         grid-template-columns: 1fr;
         gap: 12px;
@@ -6395,7 +6475,7 @@ body.page-db {
         min-width: 0;
     }
 
-    /* 비교 카드 — 세로 스택, 가로형 화살표 안내 */
+    /* ?? ?? ? ?? ??, ??? ??? ?? */
     body.page-db .benefits-comparison {
         display: flex;
         flex-direction: column;
@@ -6437,7 +6517,7 @@ body.page-db {
         margin: 0;
     }
 
-    /* 카드 사이: 가로 안내 문구 + → (세로 ↓ 대신) */
+    /* ?? ??: ?? ?? ?? + ? (?? ? ??) */
     body.page-db .comparison-arrow-icon--desktop {
         display: inline;
         font-size: 1.5rem;
@@ -6461,7 +6541,7 @@ body.page-db {
         line-height: 1.55;
     }
 
-    /* 품질 지표 그리드 */
+    /* ?? ?? ??? */
     body.page-db .benefits-metrics {
         margin-top: 2.5rem;
         padding: 1.25rem 1rem;
@@ -6532,7 +6612,7 @@ body.page-db {
         display: inline;
     }
 
-    /* 운영 사례 */
+    /* ?? ?? */
     body.page-db .evidence-box {
         width: 100%;
         max-width: 100%;
@@ -6551,7 +6631,7 @@ body.page-db {
         line-height: 1.35;
     }
 
-    /* 가격 */
+    /* ?? */
     body.page-db .pricing-card {
         width: 100%;
         max-width: 100%;
@@ -6677,7 +6757,7 @@ body.page-db {
         grid-template-columns: 1fr;
     }
 
-    /* 푸터 */
+    /* ?? */
     body.page-db footer .container {
         max-width: 100%;
         padding-left: 0;
@@ -6693,13 +6773,13 @@ body.page-db {
 
 }
 
-/* SNS — "동네에서 알아봅니다" 카드 서브 텍스트 (의미 단위 m-br, keep-all, 가독성) */
+/* SNS ? "???? ?????" ?? ?? ??? (?? ?? m-br, keep-all, ???) */
 body.page-sns .benefits-reality .reality-item p.sub-text {
     word-break: keep-all;
     line-height: 1.6;
 }
 
-/* sns.html — 문제 인식: 전환 비교 2열(PC·태블릿). 모바일(768 이하)은 이 규칙을 적용하지 않아 1열로 둠 */
+/* sns.html ? ?? ??: ?? ?? 2?(PC????). ???(768 ??)? ? ??? ???? ?? 1?? ? */
 @media (min-width: 769px) {
     body.page-sns .problem .problem-grid--compare {
         grid-template-columns: repeat(2, 1fr);
@@ -6710,7 +6790,7 @@ body.page-sns .problem .problem-headline {
     margin-bottom: 1rem;
 }
 
-/* 문제 인식 메인 헤드라인: PC는 한 줄, 모바일만 2줄 고정 */
+/* ?? ?? ?? ????: PC? ? ?, ???? 2? ?? */
 body.page-sns .problem .problem-headline__l1,
 body.page-sns .problem .problem-headline__l2 {
     display: inline;
@@ -6746,7 +6826,7 @@ body.page-sns .problem .problem-content {
     margin-top: 0;
 }
 
-/* 모바일 본문 줄바꿈(한국어) — index / sns / db 공통 */
+/* ??? ?? ???(???) ? index / sns / db ?? */
 @media (max-width: 768px) {
     p,
     .sub-text,
@@ -6812,7 +6892,7 @@ body.page-sns .problem .problem-content {
         letter-spacing: -0.01em;
     }
 
-    /* db — 키 메시지 카드 헤드라인: 모바일 2줄(m-br), keep-all */
+    /* db ? ? ??? ?? ????: ??? 2?(m-br), keep-all */
     .key-message-box h3 {
         font-size: 24px;
         line-height: 1.35;
@@ -6858,7 +6938,7 @@ body.page-sns .problem .problem-content {
         white-space: normal;
     }
 
-    /* safe-area는 노치 대응용이지만, env()가 비정상적으로 큰 값을 반환하면(에뮬/브라우저 이슈) 좌·우 패딩만 비대해져 본문이 한쪽으로 밀려 보임 → 상한으로 제한 */
+    /* safe-area? ?? ??????, env()? ?????? ? ?? ????(??/???? ??) ??? ??? ???? ??? ???? ?? ?? ? ???? ?? */
     nav .nav-container {
         padding-left: max(1.25rem, min(env(safe-area-inset-left, 0px), 48px));
         padding-right: max(1.25rem, min(env(safe-area-inset-right, 0px), 48px));
@@ -6871,7 +6951,7 @@ body.page-sns .problem .problem-content {
         padding-right: max(1.5rem, min(env(safe-area-inset-right, 0px), 48px));
     }
 
-    /* sns: .creative-targeting는 padding: 6rem 0 으로 좌우 0 — 클래스가 section보다 우선해 전역 좌우 패딩이 무시됨 */
+    /* sns: .creative-targeting? padding: 6rem 0 ?? ?? 0 ? ???? section?? ??? ?? ?? ??? ??? */
     body.page-sns .creative-targeting {
         padding-left: max(1.5rem, min(env(safe-area-inset-left, 0px), 48px));
         padding-right: max(1.5rem, min(env(safe-area-inset-right, 0px), 48px));
@@ -6919,7 +6999,7 @@ body.page-sns .problem .problem-content {
         vertical-align: baseline;
     }
 
-    /* index.html: 모바일 히어로·섹션 제목 타이포 (768px 이하) */
+    /* index.html: ??? ?????? ?? ??? (768px ??) */
     body.page-index .hero-title,
     body.page-index .section-title {
         font-size: 24px;
@@ -6937,7 +7017,7 @@ body.page-sns .problem .problem-content {
         line-height: 1.65;
     }
 
-    /* sns.html: 섹션 메인 헤드라인 통일 (768px 이하) — 전역 .section-title(1.8rem) 덮어씀 */
+    /* sns.html: ?? ?? ???? ?? (768px ??) ? ?? .section-title(1.8rem) ??? */
     body.page-sns .section-title {
         font-size: 24px;
         line-height: 1.35;
@@ -6945,7 +7025,7 @@ body.page-sns .problem .problem-content {
         word-break: keep-all;
     }
 
-    /* sns.html: 히어로 제목·본문 (768px 이하) */
+    /* sns.html: ??? ????? (768px ??) */
     body.page-sns .hero h1,
     body.page-sns .hero-content h1 {
         font-size: 24px;
@@ -6963,7 +7043,7 @@ body.page-sns .problem .problem-content {
         max-width: 100%;
     }
 
-    /* sns.html 문제 인식: 모바일 헤드라인 2줄 고정 */
+    /* sns.html ?? ??: ??? ???? 2? ?? */
     body.page-sns .problem .problem-headline__l1,
     body.page-sns .problem .problem-headline__l2 {
         display: block;
@@ -6973,13 +7053,13 @@ body.page-sns .problem .problem-content {
         display: none;
     }
 
-    /* sns.html 문제 인식: 비교 카드 — 모바일 전용 1열·전체 폭(PC는 상단 body.page-sns 규칙으로 2열 유지) */
+    /* sns.html ?? ??: ?? ?? ? ??? ?? 1???? ?(PC? ?? body.page-sns ???? 2? ??) */
     body.page-sns .problem .problem-content {
         width: 100%;
         max-width: 100%;
         min-width: 0;
         box-sizing: border-box;
-        /* section .container 좌우 여백과 겹치지 않도록 가로 패딩 생략, 상하만 정리 */
+        /* section .container ?? ??? ??? ??? ?? ?? ??, ??? ?? */
         padding: 1.5rem 0;
     }
 
@@ -7007,7 +7087,7 @@ body.page-sns .problem .problem-content {
         margin-top: 0.25rem;
     }
 
-    /* sns.html 문제 인식: 메인/서브/카드 타이포 (768px 이하) */
+    /* sns.html ?? ??: ??/??/?? ??? (768px ??) */
     body.page-sns .problem .section-title.problem-headline {
         font-size: 24px;
         line-height: 1.35;
@@ -7037,7 +7117,7 @@ body.page-sns .problem .problem-content {
         white-space: normal;
     }
 
-    /* db.html — 운영 사례(.evidence-items): @scope 내 3열 규칙이 전역보다 뒤에 있어 모바일에서도 좁은 다열로 남던 문제 보정 */
+    /* db.html ? ?? ??(.evidence-items): @scope ? 3? ??? ???? ?? ?? ?????? ?? ??? ?? ?? ?? */
     body.page-db .evidence .evidence-items {
         display: grid;
         grid-template-columns: 1fr;
@@ -7075,7 +7155,7 @@ body.page-sns .problem .problem-content {
         padding: 2rem 1.25rem;
     }
 
-    /* db.html — 전환 로직(.essence-cards): @scope 내 2열이 모바일까지 유지되던 문제 보정 */
+    /* db.html ? ?? ??(.essence-cards): @scope ? 2?? ????? ???? ?? ?? */
     body.page-db .essence .essence-cards {
         display: grid;
         grid-template-columns: 1fr;
@@ -7108,7 +7188,7 @@ body.page-sns .problem .problem-content {
         overflow-wrap: break-word;
     }
 
-    /* db.html — @scope(body.page-db)가 전역 반응형보다 뒤에 와 덮어쓰는 경우: 모바일 전용 일괄 보강 */
+    /* db.html ? @scope(body.page-db)? ?? ????? ?? ? ???? ??: ??? ?? ?? ?? */
     body.page-db .section-title {
         font-size: 1.5rem;
         line-height: 1.35;
@@ -7344,7 +7424,7 @@ body.page-sns .problem .problem-content {
     }
 }
 
-/* db.html 푸터: 기본은 1열(모바일), 넓은 화면만 3열 */
+/* db.html ??: ??? 1?(???), ?? ??? 3? */
 body.page-db footer .footer-grid {
     display: grid;
     grid-template-columns: 1fr;
@@ -7359,7 +7439,7 @@ body.page-db footer .footer-grid {
     }
 }
 
-/* db.html — 모바일 가로 치우침·오버플로 정리 (내비 CTA·컨테이너·section-bridge) */
+/* db.html ? ??? ?? ???????? ?? (?? CTA??????section-bridge) */
 @media (max-width: 768px) {
     html {
         overflow-x: hidden;
@@ -7668,7 +7748,7 @@ body.page-payment {
     box-shadow: 0 8px 20px rgba(59, 130, 246, 0.14);
 }
 
-/* ----- 이용 기간 카드 (전환·추천 플랜 UI) ----- */
+/* ----- ?? ?? ?? (????? ?? UI) ----- */
 .payment-grid--period {
     align-items: stretch;
     gap: 1rem;
@@ -7875,7 +7955,7 @@ body.page-payment {
     font-weight: 800;
 }
 
-/* 연장 플로우: 1개월=긴급(빨강), 3개월=혜택(초록) */
+/* ?? ???: 1??=??(??), 3??=??(??) */
 .payment-card.payment-card--period-monthly {
     border-color: rgba(220, 38, 38, 0.42);
     background: linear-gradient(180deg, #fffbfb 0%, #fff1f2 100%);
@@ -8116,7 +8196,7 @@ body.page-payment {
    Responsive Override (index / sns / db)
    - PC: 1200px+
    - Tablet: 768px ~ 1199px
-   - Mobile: 767px 이하
+   - Mobile: 767px ??
    ========================================================= */
 
 /* Base safety */
@@ -8262,7 +8342,7 @@ svg {
     .nav-links {
         width: 100%;
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 0.35rem;
     }
 
@@ -8375,7 +8455,7 @@ svg {
     }
 }
 
-/* Main page mobile nav: 링크 항상 노출 */
+/* Main page mobile nav: ?? ?? ?? */
 @media (max-width: 767px) {
     body.page-index .nav-container {
         flex-direction: column;
@@ -8398,7 +8478,7 @@ svg {
     body.page-index .nav-links {
         width: 100%;
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 0.35rem;
     }
 
@@ -8422,5 +8502,647 @@ svg {
         font-size: 0.8rem;
         line-height: 1.2;
         white-space: nowrap;
+    }
+}
+
+/* =========================================================
+   Main FAQ accordion (sns/db pattern, unscoped)
+   Package pages use the unified --pkg-* block below.
+   ========================================================= */
+body.page-index .faq {
+    background: var(--bg-light);
+    padding: 5rem 2rem;
+}
+
+body.page-index .faq-list {
+    max-width: 900px;
+    margin: 3rem auto 0;
+}
+
+body.page-index .faq-item {
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    border: 2px solid var(--border);
+    transition: all 0.3s ease;
+}
+
+body.page-index .faq-item.active,
+body.page-package-starter .faq-item.active,
+body.page-package-growth .faq-item.active {
+    border-color: var(--accent);
+    box-shadow: 0 4px 20px rgba(37, 99, 235, 0.1);
+}
+
+body.page-index .faq-question,
+body.page-package-starter .faq-question,
+body.page-package-growth .faq-question {
+    padding: 1.5rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+body.page-index .faq-question:hover,
+body.page-package-starter .faq-question:hover,
+body.page-package-growth .faq-question:hover {
+    background: rgba(37, 99, 235, 0.05);
+    color: var(--accent);
+}
+
+body.page-index .faq-question::after,
+body.page-package-starter .faq-question::after,
+body.page-package-growth .faq-question::after {
+    content: "+";
+    font-size: 2rem;
+    color: var(--accent);
+    font-weight: 300;
+    transition: transform 0.3s ease;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-left: 1rem;
+}
+
+body.page-index .faq-item.active .faq-question::after,
+body.page-package-starter .faq-item.active .faq-question::after,
+body.page-package-growth .faq-item.active .faq-question::after {
+    content: "\2212";
+}
+
+body.page-index .faq-answer,
+body.page-package-starter .faq-answer,
+body.page-package-growth .faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    padding: 0 2rem;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+body.page-index .faq-item.active .faq-answer,
+body.page-package-starter .faq-item.active .faq-answer,
+body.page-package-growth .faq-item.active .faq-answer {
+    max-height: 500px;
+    padding: 0 2rem 1.5rem;
+}
+
+@media (max-width: 768px) {
+    body.page-index .faq {
+        padding: 3.5rem 1.25rem;
+    }
+
+    body.page-index .faq-question {
+        padding: 1.15rem 1.25rem;
+        font-size: 1rem;
+    }
+
+    body.page-index .faq-item.active .faq-answer {
+        padding: 0 1.25rem 1.25rem;
+        font-size: 0.95rem;
+    }
+
+    body.page-index .nav-links {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767px) {
+    body.page-package-starter .nav-cta,
+    body.page-package-growth .nav-cta {
+        display: flex;
+        width: 100%;
+        min-height: 2.35rem;
+        padding: 0.55rem 0.9rem;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+}
+
+/* =========================================================
+   Package pages: unified rhythm (uses --pkg-* tokens)
+   ========================================================= */
+body.page-package-starter,
+body.page-package-growth {
+    padding-top: 0;
+}
+
+body.page-package-starter nav#nav,
+body.page-package-growth nav#nav {
+    position: sticky;
+    top: 0;
+    z-index: 10050;
+}
+
+body.page-package-starter .container,
+body.page-package-growth .container {
+    max-width: var(--pkg-container-max);
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Shared section shell */
+body.page-package-starter .pkg-section,
+body.page-package-growth .pkg-section,
+body.page-package-starter .faq,
+body.page-package-growth .faq,
+body.page-package-starter .final-cta,
+body.page-package-growth .final-cta,
+body.page-package-starter .contact-us-section,
+body.page-package-growth .contact-us-section {
+    padding: var(--pkg-section-pad-y) var(--pkg-section-pad-x);
+}
+
+body.page-package-starter .hero.pkg-hero,
+body.page-package-growth .hero.pkg-hero {
+    padding: var(--pkg-hero-pad-y) var(--pkg-section-pad-x);
+}
+
+body.page-package-starter .pkg-hero-inner,
+body.page-package-growth .pkg-hero-inner {
+    max-width: var(--pkg-container-max);
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    text-align: left;
+}
+
+body.page-package-starter .pkg-hero .hero-cta,
+body.page-package-growth .pkg-hero .hero-cta {
+    margin-top: 1.75rem;
+}
+
+/* Section label + title + description ? same on every package section */
+body.page-package-starter .section-label,
+body.page-package-growth .section-label {
+    display: inline-block;
+    font-size: var(--pkg-label-size);
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 1rem;
+    text-align: left;
+}
+
+body.page-package-starter .section-title,
+body.page-package-growth .section-title {
+    font-size: var(--pkg-heading-size);
+    font-weight: 900;
+    line-height: 1.3;
+    color: var(--primary);
+    margin: 0 0 1rem;
+    text-align: left;
+    word-break: keep-all;
+}
+
+body.page-package-starter .section-description,
+body.page-package-growth .section-description {
+    font-size: var(--pkg-desc-size);
+    color: var(--text-secondary);
+    line-height: 1.75;
+    max-width: none;
+    margin: 0;
+    text-align: left;
+    word-break: keep-all;
+}
+
+body.page-package-starter .final-cta .section-title,
+body.page-package-growth .final-cta .section-title,
+body.page-package-starter .final-cta .section-description,
+body.page-package-growth .final-cta .section-description {
+    color: inherit;
+}
+
+body.page-package-starter .final-cta .section-label,
+body.page-package-growth .final-cta .section-label {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Setup banner (growth) */
+body.page-package-starter .pkg-setup-banner,
+body.page-package-growth .pkg-setup-banner {
+    background: var(--accent-soft);
+    border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+    padding: 0.9rem var(--pkg-section-pad-x);
+    text-align: center;
+}
+
+body.page-package-starter .pkg-setup-banner p,
+body.page-package-growth .pkg-setup-banner p {
+    margin: 0 auto;
+    max-width: var(--pkg-container-max);
+    color: var(--text-primary);
+    font-size: var(--pkg-card-text-size);
+    word-break: keep-all;
+}
+
+body.page-package-starter .pkg-setup-banner a,
+body.page-package-growth .pkg-setup-banner a {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+/* Shared card surface */
+body.page-package-starter .pkg-include-card,
+body.page-package-growth .pkg-include-card,
+body.page-package-starter .pkg-checklist li,
+body.page-package-growth .pkg-checklist li,
+body.page-package-starter .pkg-process-steps .process-step,
+body.page-package-growth .pkg-process-steps .process-step,
+body.page-package-starter .faq-item,
+body.page-package-growth .faq-item {
+    background: var(--bg-white);
+    border: var(--pkg-card-border);
+    border-radius: var(--pkg-card-radius);
+    box-shadow: var(--pkg-card-shadow);
+}
+
+/* Include cards */
+body.page-package-starter .pkg-include-grid,
+body.page-package-growth .pkg-include-grid {
+    margin-top: var(--pkg-content-gap);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--pkg-grid-gap);
+}
+
+body.page-package-starter .pkg-include-card,
+body.page-package-growth .pkg-include-card {
+    padding: var(--pkg-card-padding);
+}
+
+body.page-package-starter .pkg-include-icon,
+body.page-package-growth .pkg-include-icon {
+    width: 3rem;
+    height: 3rem;
+    margin: 0 0 1rem;
+    border-radius: 12px;
+    background: var(--accent-soft);
+    border: 1px solid rgba(59, 130, 246, 0.14);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+body.page-package-starter .pkg-include-icon .pkg-brand-icon,
+body.page-package-growth .pkg-include-icon .pkg-brand-icon,
+body.page-package-starter .pkg-include-icon .pkg-line-icon,
+body.page-package-growth .pkg-include-icon .pkg-line-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    display: block;
+}
+
+body.page-package-starter .pkg-include-icon--stack,
+body.page-package-growth .pkg-include-icon--stack {
+    width: auto;
+    min-width: 3rem;
+    height: 3rem;
+    padding: 0 0.55rem;
+    gap: 0.3rem;
+}
+
+body.page-package-starter .pkg-include-brand,
+body.page-package-growth .pkg-include-brand {
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 7px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+body.page-package-starter .pkg-include-brand svg,
+body.page-package-growth .pkg-include-brand svg {
+    width: 0.95rem;
+    height: 0.95rem;
+    display: block;
+}
+
+body.page-package-starter .pkg-include-card h3,
+body.page-package-growth .pkg-include-card h3 {
+    font-size: var(--pkg-card-title-size);
+    font-weight: 800;
+    color: var(--primary);
+    margin: 0 0 0.55rem;
+    line-height: 1.4;
+    word-break: keep-all;
+}
+
+body.page-package-starter .pkg-include-card p,
+body.page-package-growth .pkg-include-card p {
+    font-size: var(--pkg-card-text-size);
+    color: var(--text-secondary);
+    line-height: 1.7;
+    word-break: keep-all;
+    margin: 0;
+}
+
+body.page-package-starter .pkg-note,
+body.page-package-growth .pkg-note {
+    margin-top: 1.25rem;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    word-break: keep-all;
+}
+
+/* Why / next text blocks */
+body.page-package-starter .pkg-why-text,
+body.page-package-growth .pkg-why-text {
+    margin-top: 0.5rem;
+    max-width: 52rem;
+}
+
+body.page-package-starter .pkg-next .hero-cta,
+body.page-package-growth .pkg-next .hero-cta {
+    margin-top: var(--pkg-content-gap);
+}
+
+/* Compare table (growth) */
+body.page-package-starter .pkg-compare-table,
+body.page-package-growth .pkg-compare-table {
+    margin-top: var(--pkg-content-gap);
+    border: var(--pkg-card-border);
+    border-radius: var(--pkg-card-radius);
+    overflow: hidden;
+    background: var(--bg-white);
+    box-shadow: var(--pkg-card-shadow);
+}
+
+body.page-package-starter .pkg-compare-row,
+body.page-package-growth .pkg-compare-row {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr) minmax(0, 1.1fr);
+    gap: 1rem;
+    padding: 1.1rem 1.35rem;
+    border-bottom: 1px solid var(--border);
+    align-items: start;
+}
+
+body.page-package-starter .pkg-compare-row:last-child,
+body.page-package-growth .pkg-compare-row:last-child {
+    border-bottom: none;
+}
+
+body.page-package-starter .pkg-compare-head,
+body.page-package-growth .pkg-compare-head {
+    background: var(--surface);
+    font-weight: 800;
+    color: var(--primary);
+    font-size: 0.92rem;
+}
+
+body.page-package-starter .pkg-compare-row > [role="rowheader"],
+body.page-package-growth .pkg-compare-row > [role="rowheader"] {
+    font-weight: 700;
+    color: var(--primary);
+}
+
+body.page-package-starter .pkg-compare-row > [role="cell"],
+body.page-package-growth .pkg-compare-row > [role="cell"] {
+    color: var(--text-secondary);
+    font-size: var(--pkg-card-text-size);
+    line-height: 1.65;
+    word-break: keep-all;
+}
+
+body.page-package-starter .pkg-compare-link,
+body.page-package-growth .pkg-compare-link {
+    margin-top: 1.25rem;
+    font-size: var(--pkg-card-text-size);
+    color: var(--text-secondary);
+}
+
+body.page-package-starter .pkg-compare-link a,
+body.page-package-growth .pkg-compare-link a {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+/* Checklist */
+body.page-package-starter .pkg-checklist,
+body.page-package-growth .pkg-checklist {
+    list-style: none;
+    margin: var(--pkg-content-gap) 0 0;
+    padding: 0;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--pkg-grid-gap);
+    text-align: left;
+}
+
+body.page-package-starter .pkg-checklist li,
+body.page-package-growth .pkg-checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    padding: var(--pkg-card-padding);
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.6;
+    word-break: keep-all;
+}
+
+body.page-package-starter .pkg-check-icon,
+body.page-package-growth .pkg-check-icon {
+    flex-shrink: 0;
+    width: 1.85rem;
+    height: 1.85rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 0.95rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-top: 0.05rem;
+}
+
+/* Process */
+body.page-package-starter .process.pkg-section,
+body.page-package-growth .process.pkg-section {
+    background: var(--bg-light);
+}
+
+body.page-package-starter .pkg-process-steps,
+body.page-package-growth .pkg-process-steps {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--pkg-grid-gap);
+    margin-top: var(--pkg-content-gap);
+    position: relative;
+}
+
+body.page-package-starter .pkg-process-steps .process-step,
+body.page-package-growth .pkg-process-steps .process-step {
+    text-align: center;
+    position: relative;
+    padding: 1.5rem 1.1rem 1.35rem;
+}
+
+body.page-package-starter .pkg-process-steps .process-step::after,
+body.page-package-growth .pkg-process-steps .process-step::after {
+    content: "";
+    position: absolute;
+    top: 2.45rem;
+    right: calc(var(--pkg-grid-gap) / -2);
+    width: var(--pkg-grid-gap);
+    height: 2px;
+    background: var(--accent);
+    opacity: 0.4;
+    z-index: 1;
+}
+
+body.page-package-starter .pkg-process-steps .process-step:last-child::after,
+body.page-package-growth .pkg-process-steps .process-step:last-child::after {
+    display: none;
+}
+
+body.page-package-starter .pkg-process-steps .process-number,
+body.page-package-growth .pkg-process-steps .process-number {
+    width: 3.25rem;
+    height: 3.25rem;
+    margin: 0 auto 1.1rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+    color: #fff;
+    font-size: 1.25rem;
+    font-weight: 900;
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.28);
+}
+
+body.page-package-starter .pkg-process-steps .process-step h3,
+body.page-package-growth .pkg-process-steps .process-step h3 {
+    font-size: var(--pkg-card-title-size);
+    font-weight: 800;
+    color: var(--primary);
+    margin: 0 0 0.55rem;
+    line-height: 1.4;
+    word-break: keep-all;
+}
+
+body.page-package-starter .pkg-process-steps .process-step p,
+body.page-package-growth .pkg-process-steps .process-step p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--pkg-card-text-size);
+    line-height: 1.6;
+    word-break: keep-all;
+}
+
+/* FAQ ? package pages: match section pad, full-width list aligned left */
+body.page-package-starter .faq,
+body.page-package-growth .faq {
+    background: var(--bg-light);
+    padding: var(--pkg-section-pad-y) var(--pkg-section-pad-x);
+}
+
+body.page-package-starter .faq-list,
+body.page-package-growth .faq-list {
+    max-width: none;
+    width: 100%;
+    margin: var(--pkg-content-gap) 0 0;
+}
+
+body.page-package-starter .faq-item,
+body.page-package-growth .faq-item {
+    margin-bottom: var(--pkg-grid-gap);
+    border-width: 1px;
+}
+
+body.page-package-starter .faq-item:last-child,
+body.page-package-growth .faq-item:last-child {
+    margin-bottom: 0;
+}
+
+body.page-package-starter .faq-question,
+body.page-package-growth .faq-question {
+    padding: var(--pkg-card-padding);
+    font-size: 1.02rem;
+}
+
+body.page-package-starter .faq-item.active .faq-answer,
+body.page-package-growth .faq-item.active .faq-answer {
+    padding: 0 1.4rem 1.35rem;
+}
+
+@media (max-width: 900px) {
+    :root {
+        --pkg-section-pad-y: 3.5rem;
+        --pkg-section-pad-x: 1.25rem;
+        --pkg-hero-pad-y: 4rem;
+        --pkg-heading-size: 1.85rem;
+        --pkg-content-gap: 1.75rem;
+    }
+
+    body.page-package-starter .pkg-include-grid,
+    body.page-package-growth .pkg-include-grid,
+    body.page-package-starter .pkg-checklist,
+    body.page-package-growth .pkg-checklist {
+        grid-template-columns: 1fr;
+    }
+
+    body.page-package-starter .pkg-process-steps,
+    body.page-package-growth .pkg-process-steps {
+        grid-template-columns: 1fr;
+    }
+
+    body.page-package-starter .pkg-process-steps .process-step::after,
+    body.page-package-growth .pkg-process-steps .process-step::after {
+        top: auto;
+        right: auto;
+        left: 50%;
+        bottom: calc(var(--pkg-grid-gap) / -2);
+        width: 2px;
+        height: var(--pkg-grid-gap);
+        transform: translateX(-50%);
+    }
+
+    body.page-package-starter .pkg-compare-head,
+    body.page-package-growth .pkg-compare-head {
+        display: none;
+    }
+
+    body.page-package-starter .pkg-compare-row,
+    body.page-package-growth .pkg-compare-row {
+        grid-template-columns: 1fr;
+        gap: 0.4rem;
+    }
+
+    body.page-package-starter .pkg-compare-row > [role="cell"]::before,
+    body.page-package-growth .pkg-compare-row > [role="cell"]::before {
+        content: attr(data-label);
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--accent);
+        margin-bottom: 0.15rem;
     }
 }
