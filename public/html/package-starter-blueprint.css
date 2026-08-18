@@ -462,7 +462,7 @@ body.page-package-starter .final-cta{
 .consult-success{display:none;}
 .bp-contact.is-success,
 body.page-package-growth .bp-contact.is-success{
-  padding:40px 0 48px;
+  padding:64px 0 48px;
 }
 .bp-contact.is-success .section-tag,
 .bp-contact.is-success .wrap > h2,
@@ -523,7 +523,7 @@ body.page-package-growth .bp-contact.is-success{
   font-weight:500;
   color:var(--slate);
   line-height:1.6;
-  margin:0;
+  margin:0 0 24px;
 }
 .consult-success-phone a{
   color:var(--blue-deep);
@@ -533,7 +533,7 @@ body.page-package-growth .bp-contact.is-success{
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  margin-top:20px;
+  margin:0;
   background:var(--annot);
   color:#fff;
   font:inherit;
@@ -547,7 +547,7 @@ body.page-package-growth .bp-contact.is-success{
 @media(max-width:768px){
   .bp-contact.is-success,
   body.page-package-growth .bp-contact.is-success{
-    padding:32px 0 40px;
+    padding:48px 0 40px;
   }
   .consult-success-card{
     padding:32px 24px;
