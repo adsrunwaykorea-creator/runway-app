@@ -18,6 +18,9 @@
   .mono{font-family:'JetBrains Mono',monospace;}
   .wrap{max-width:1120px;margin:0 auto;padding:0 24px;}
   a{color:inherit;text-decoration:none;}
+  body.page-package-starter .m-br,
+  body.page-package-starter .m-only{display:none;}
+  body.page-package-starter .d-only{display:inline;}
 
   header{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--line);}
   .nav{display:flex;align-items:center;justify-content:space-between;height:68px;}
@@ -427,6 +430,45 @@ body.page-package-starter .final-cta{
   margin-left:auto;
   margin-right:auto;
   margin-bottom:0;
+}
+@media(max-width:800px){
+  body.page-package-starter .d-only{display:none;}
+  body.page-package-starter .m-only{display:inline; white-space:nowrap;}
+  body.page-package-starter .m-br{display:block;}
+  body.page-package-starter .trust-proof{
+    white-space:nowrap;
+    font-size:13.5px;
+    letter-spacing:-.02em;
+    line-height:1.55;
+  }
+  body.page-package-starter .trust-text-oneline{
+    white-space:nowrap;
+    font-size:12.5px;
+    letter-spacing:-.045em;
+    line-height:1.4;
+  }
+  body.page-package-starter .final-cta p{
+    white-space:nowrap;
+    font-size:13.5px;
+    letter-spacing:-.02em;
+    line-height:1.55;
+  }
+  body.page-package-starter .showcase-panel h3{
+    font-size:18px;
+    letter-spacing:-.02em;
+    line-height:1.35;
+    word-break:keep-all;
+  }
+}
+@media(max-width:380px){
+  body.page-package-starter .trust-text-oneline{
+    font-size:11.5px;
+    letter-spacing:-.055em;
+  }
+  body.page-package-starter .trust-proof,
+  body.page-package-starter .final-cta p{
+    font-size:12.5px;
+  }
 }
 @media(max-width:760px){
   body.page-package-starter .hero{
