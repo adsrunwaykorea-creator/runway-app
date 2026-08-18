@@ -8,6 +8,25 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: projectRoot,
   },
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/package/starter',
+        permanent: false,
+      },
+      {
+        source: '/sns',
+        destination: '/package/growth',
+        statusCode: 301,
+      },
+      {
+        source: '/db',
+        destination: '/package/growth',
+        statusCode: 301,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

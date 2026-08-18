@@ -369,7 +369,7 @@ export default function PaymentCheckoutClient() {
                 환불정책
               </Link>
               {' · '}
-              <Link href="/#contact" className="font-medium text-zinc-900 underline underline-offset-2">
+              <Link href="/package/starter#contact" className="font-medium text-zinc-900 underline underline-offset-2">
                 개인정보 안내
               </Link>
             </span>
@@ -398,7 +398,7 @@ export default function PaymentCheckoutClient() {
           <span className="text-zinc-300" aria-hidden>
             |
           </span>
-          <Link href="/#contact" className="text-zinc-600 underline-offset-2 hover:text-zinc-900 hover:underline">
+          <Link href="/package/starter#contact" className="text-zinc-600 underline-offset-2 hover:text-zinc-900 hover:underline">
             개인정보처리방침
           </Link>
           <span className="text-zinc-300" aria-hidden>
