@@ -88,8 +88,7 @@
   }
 
   .link {
-    font-size: 11px;
-    letter-spacing: -0.02em;
+    display: none;
   }
 
   .cta {
