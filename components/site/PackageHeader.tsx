@@ -20,7 +20,7 @@ export function PackageHeader({ active }: PackageHeaderProps) {
                 : styles.link
             }
           >
-            초보 창업 패키지
+            창업 초기 마케팅 패키지
           </a>
           <a
             href="/package/growth"

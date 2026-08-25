@@ -216,7 +216,7 @@
         window.__runwayLeadTracked = true;
         window.fbq("track", "Lead", {
           content_name: "무료 상담 신청",
-          content_category: "초보 창업 패키지",
+          content_category: "창업 초기 마케팅 패키지",
           currency: "KRW",
           value: 660000,
         });

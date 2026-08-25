@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { CHECKOUT_PRODUCT_NAME } from '@/lib/checkout/kakao-pay-product';
+import { getServiceTypeDisplayName } from '@/lib/meta/constants';
 import { SUBSCRIBER_PAYMENT_CHANNELS } from '@/lib/subscriber/subscriber-constants';
 import type { ConsultationLeadRow } from '@/types/consultation-lead';
 
@@ -49,7 +50,7 @@ export function SubscriberRegisterModal({ lead, open, submitting, onClose, onSub
     if (!open || !lead) return;
     const start = todayInputValue();
     setForm({
-      product_name: lead.service_type?.trim() || CHECKOUT_PRODUCT_NAME,
+      product_name: getServiceTypeDisplayName(lead.service_type) || CHECKOUT_PRODUCT_NAME,
       payment_method: 'bank_transfer',
       payment_amount: '499000',
       paid_at: start,

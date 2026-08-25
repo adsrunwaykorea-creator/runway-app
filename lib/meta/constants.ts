@@ -1,4 +1,4 @@
-export const STARTER_PACKAGE_NAME = "초보 창업 패키지";
+export const STARTER_PACKAGE_NAME = "창업 초기 마케팅 패키지";
 export const GROWTH_PACKAGE_NAME = "사업 성장 패키지";
 export const CONSULTATION_FORM_NAME = "무료 상담 신청";
 
@@ -27,4 +27,23 @@ export function getPackageNameFromPath(pathname: string): string {
   if (pathname.includes("/package/growth")) return GROWTH_PACKAGE_NAME;
   if (pathname.includes("/package/starter")) return STARTER_PACKAGE_NAME;
   return "";
+}
+
+/** Maps stored service_type IDs to the current public package label. Does not rewrite DB values. */
+export function getServiceTypeDisplayName(serviceType: string | null | undefined): string {
+  const value = serviceType?.trim() ?? "";
+  if (!value) return "";
+  const lowered = value.toLowerCase();
+  if (
+    lowered === "starter" ||
+    lowered.includes("/package/starter") ||
+    value === "초보 창업 패키지" ||
+    value === STARTER_PACKAGE_NAME
+  ) {
+    return STARTER_PACKAGE_NAME;
+  }
+  if (lowered === "growth" || lowered.includes("/package/growth") || value === GROWTH_PACKAGE_NAME) {
+    return GROWTH_PACKAGE_NAME;
+  }
+  return value;
 }

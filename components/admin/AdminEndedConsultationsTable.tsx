@@ -6,6 +6,7 @@ import { ConsultationLeadAttribution } from '@/components/admin/ConsultationLead
 import { AdminPagination } from '@/components/admin/AdminPagination';
 import { AdminSearchBar } from '@/components/admin/AdminSearchBar';
 import type { ConsultationLeadRow } from '@/types/consultation-lead';
+import { getServiceTypeDisplayName } from '@/lib/meta/constants';
 
 function displayCompany(lead: ConsultationLeadRow): string {
   return lead.company_name?.trim() || lead.company?.trim() || '-';
@@ -87,6 +88,9 @@ export function AdminEndedConsultationsTable({
                   </h3>
                   <p className="mt-1 text-sm text-zinc-600">
                     {lead.phone ?? '-'} · {lead.business_type}
+                  </p>
+                  <p className="mt-1 text-xs text-zinc-500">
+                    패키지 {getServiceTypeDisplayName(lead.service_type) || '-'}
                   </p>
                   <ConsultationLeadAttribution lead={lead} />
                 </div>
