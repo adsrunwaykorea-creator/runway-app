@@ -1,0 +1,25 @@
+-- Adds Meta ads attribution columns to consultation_leads without changing existing rows.
+
+alter table public.consultation_leads
+  add column if not exists utm_content text,
+  add column if not exists utm_term text,
+  add column if not exists fbclid text,
+  add column if not exists landing_page text,
+  add column if not exists first_utm_source text,
+  add column if not exists first_utm_medium text,
+  add column if not exists first_utm_campaign text,
+  add column if not exists first_utm_content text,
+  add column if not exists first_utm_term text,
+  add column if not exists first_fbclid text,
+  add column if not exists first_landing_page text,
+  add column if not exists first_referrer text,
+  add column if not exists first_visited_at timestamptz,
+  add column if not exists last_utm_source text,
+  add column if not exists last_utm_medium text,
+  add column if not exists last_utm_campaign text,
+  add column if not exists last_utm_content text,
+  add column if not exists last_utm_term text,
+  add column if not exists last_fbclid text,
+  add column if not exists last_landing_page text,
+  add column if not exists last_referrer text,
+  add column if not exists last_visited_at timestamptz;

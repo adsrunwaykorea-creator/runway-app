@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { formatDate } from '@/lib/date';
+import { ConsultationLeadAttribution } from '@/components/admin/ConsultationLeadAttribution';
 import { AdminPagination } from '@/components/admin/AdminPagination';
 import { AdminSearchBar } from '@/components/admin/AdminSearchBar';
 import type { ConsultationLeadRow } from '@/types/consultation-lead';
@@ -87,6 +88,7 @@ export function AdminEndedConsultationsTable({
                   <p className="mt-1 text-sm text-zinc-600">
                     {lead.phone ?? '-'} · {lead.business_type}
                   </p>
+                  <ConsultationLeadAttribution lead={lead} />
                 </div>
                 <button
                   type="button"

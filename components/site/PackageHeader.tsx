@@ -32,7 +32,7 @@ export function PackageHeader({ active }: PackageHeaderProps) {
           >
             사업 성장 패키지
           </a>
-          <a href="#contact" className={styles.cta}>
+          <a href="#contact" className={styles.cta} data-cta-location="header">
             무료 상담 신청
           </a>
         </nav>

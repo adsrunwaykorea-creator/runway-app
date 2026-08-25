@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 import { isMissingTableError } from "@/lib/consultation-leads-errors";
+import {
+  ATTRIBUTION_MIGRATION_PROBE_COLUMN,
+  compactAttributionFields,
+  pickAttributionLeadFields,
+} from "@/lib/meta/attribution-fields";
 import { getSupabaseLeadClient } from "@/lib/supabase/server";
 
 const SAVE_ERROR_MESSAGE = "상담 신청 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
@@ -40,6 +45,12 @@ type Body = {
   utmSource?: unknown;
   utmMedium?: unknown;
   utmCampaign?: unknown;
+  utmContent?: unknown;
+  utmTerm?: unknown;
+  fbclid?: unknown;
+  landingPage?: unknown;
+  landing_page?: unknown;
+  attribution?: unknown;
   payload?: unknown;
 };
 
@@ -179,10 +190,25 @@ export async function POST(request: Request) {
     extra?.pageSource,
     extra?.page_source,
   );
-  const referrer = pickStr(body.referrer, extra?.referrer) || null;
-  const utmSource = pickStr(body.utmSource, extra?.utm_source, extra?.utmSource) || null;
-  const utmMedium = pickStr(body.utmMedium, extra?.utm_medium, extra?.utmMedium) || null;
-  const utmCampaign = pickStr(body.utmCampaign, extra?.utm_campaign, extra?.utmCampaign) || null;
+  const attributionFields = pickAttributionLeadFields({
+    body: body as Record<string, unknown>,
+    extra,
+  });
+  const referrer =
+    pickStr(body.referrer, extra?.referrer, attributionFields.referrer) || null;
+  const utmSource =
+    pickStr(body.utmSource, extra?.utm_source, extra?.utmSource, attributionFields.utm_source) ||
+    null;
+  const utmMedium =
+    pickStr(body.utmMedium, extra?.utm_medium, extra?.utmMedium, attributionFields.utm_medium) ||
+    null;
+  const utmCampaign =
+    pickStr(
+      body.utmCampaign,
+      extra?.utm_campaign,
+      extra?.utmCampaign,
+      attributionFields.utm_campaign,
+    ) || null;
   const monthlyBudget = pickStr(body.monthlyBudget, body.adBudget, extra?.monthlyBudget, extra?.adBudget);
   const adChannel = pickStr(body.adChannel, extra?.adChannel) || null;
   const message = pickStr(body.message, extra?.message) || null;
@@ -191,6 +217,8 @@ export async function POST(request: Request) {
   if (!contact) {
     return NextResponse.json({ success: false, message: SAVE_ERROR_MESSAGE }, { status: 400 });
   }
+
+  const compactAttribution = compactAttributionFields(attributionFields);
 
   const rawPayload = {
     ...(extra ?? {}),
@@ -208,6 +236,7 @@ export async function POST(request: Request) {
     utm_source: utmSource,
     utm_medium: utmMedium,
     utm_campaign: utmCampaign,
+    ...compactAttribution,
   };
 
   const row: Record<string, unknown> = {
@@ -236,6 +265,16 @@ export async function POST(request: Request) {
 
   try {
     const supabase = getSupabaseLeadClient();
+    const attributionProbe = await supabase
+      .from("consultation_leads")
+      .select(ATTRIBUTION_MIGRATION_PROBE_COLUMN)
+      .limit(1);
+    if (!attributionProbe.error) {
+      for (const [key, value] of Object.entries(compactAttribution)) {
+        if (value) row[key] = value;
+      }
+    }
+
     console.log("[consultation-lead] inserting row", {
       source: row.source,
       service_type: row.service_type,

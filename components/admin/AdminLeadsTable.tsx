@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { formatDate } from '@/lib/date';
 import { downloadConsultationLeadsCsv } from '@/lib/admin/consultation-leads-csv';
+import { ConsultationLeadAttribution } from '@/components/admin/ConsultationLeadAttribution';
 import { AdminPagination } from '@/components/admin/AdminPagination';
 import { AdminSearchBar } from '@/components/admin/AdminSearchBar';
 import {
@@ -145,6 +146,7 @@ export function AdminLeadsTable({
                     <p className="mt-1 text-sm text-zinc-600">
                       {lead.phone ?? '-'} · {lead.business_type}
                     </p>
+                    <ConsultationLeadAttribution lead={lead} />
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <select
